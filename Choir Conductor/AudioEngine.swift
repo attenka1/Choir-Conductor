@@ -50,7 +50,7 @@ import Foundation
     }
     func silence() {
         reference.stop(immediately: true)
-        // Pausing synchronizes the callback before the next start consumes clear().
+        // Pause before releasing the engine's session claim; the next callback consumes clear().
         engine.pause()
         renderer.clear()
         session.end(.sound)

@@ -10,7 +10,7 @@
 - Piano and reference DSP state belongs to their audio callbacks. A short control mailbox uses try-lock on the callback: if publication is busy, the callback renders its previous state without waiting or inserting silence. Pitch tables are computed before publication. No UI callbacks execute while the mailbox is locked.
 - Beat polling starts only for a running metronome and only publishes changed values. Recording elapsed-time polling starts only while recording. Engine/session release waits 300 ms after the last live sound, allowing release envelopes to finish; new sound cancels that release.
 - Chord playback prepares the audio engine before changing the stored profile, then commits the profile together.
-- Shared note spelling follows the transposed open fifth chain for Pythagorean and quarter-comma tuning; the keyboard and chord labels use the same labels.
+- Shared note spelling follows the transposed open fifth chain for Pythagorean and quarter-comma tuning and the chosen scale intervals for just intonation; the keyboard and chord labels use the same labels.
 - Missing or invalid SoundFont does not prevent piano/metronome/precise reference playback. The settings fall back to the precise tone with an error message when the unavailable font is selected.
 - Keyboard geometry/accessibility elements are rebuilt only when necessary. VoiceOver activation plays a short note, with sustain/reference behavior preserved. The 24-note black halves are at least 44 points wide; the keyboard scrolls to cover the larger range. Deliberate swipe threshold is 24 points. VoiceOver horizontal scrolling is supported.
 - Sample fundamentals moved unchanged from the existing measurement CSV into bundled metadata. Format, frame count and loop bounds are validated before playback. Existing loop points and timbre are retained. Safe loop wrapping supports large playback steps.
@@ -19,9 +19,9 @@
 
 ## Verification
 
-The shared Xcode scheme contains a hosted XCTest target. Tests cover session policy transitions, repeated activation, failed activation, interruption, corrupt chord preservation, stale recorder callback, transposed spelling, concurrent control updates, chord release, packaged sample format and missing SoundFont fallback. Use Cmd–U in Xcode.
+The shared Xcode scheme contains a hosted XCTest target. Tests cover session policy transitions, repeated activation, failed activation, interruption, corrupt chord preservation, stale recorder callback, transposed spelling, concurrent control updates, chord release, packaged sample format and missing SoundFont fallback. Use Cmd–U in Xcode. All 12 tests passed on the iPhone 11 Pro Max simulator running iOS 26.5. The Finnish portrait main screen was also inspected from a simulator screenshot.
 
-Additional existing standalone checks exercise sample-clock metronome timing, all 97 notes, bounded output, release tails, chord persistence, reference-tone sustain/stop and localization key/format coverage. Their sources remain in the workspace-level `Tests` directory.
+Additional existing standalone checks exercise sample-clock metronome timing, all 97 notes, bounded output, release tails, chord persistence, reference-tone sustain/stop and localization key/format coverage. Their sources remain in the workspace-level `Tests` directory. These checks passed. The spectral check measured precise reference tones at their expected frequencies for the tested A4 values, quarter tone and E4 temperament cases; piano A4/quarter tone retained approximately −1.9/+2.0 cent differences, as before. No full-range pitch sweep was repeated in this change.
 
 ## Device validation still required
 
