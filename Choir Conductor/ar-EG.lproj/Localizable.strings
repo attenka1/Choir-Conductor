@@ -28,8 +28,8 @@
 "Käyttöliittymän kieli" = "لغة الواجهة";
 "Oma arvo…" = "القيمة المخصصة...";
 "Viritysjärjestelmä" = "نظام الضبط";
-"A4 säilyy valitussa taajuudessa. Pohjasävel määrää puhtaiden suhteiden lähtösävelen." = "يظل حجم A4 عند التردد المحدد. تحدد النوتة الجذرية نغمة البداية للنسب النقية.";
-"A4 säilyy valitussa taajuudessa. C-pohja vastaa historiallisen järjestelmän tavanomaista sijoitusta; muu pohjasävel siirtää koko virityskaavion." = "يظل حجم A4 عند التردد المحدد. يستخدم جذر C تخطيط الضبط التاريخي التقليدي؛ جذر آخر ينقل نمط الضبط بأكمله.";
+"A4 säilyy valitussa taajuudessa. Pohjasävel määrää puhtaiden suhteiden lähtösävelen." = "تظل نغمة A4 عند التردد المحدد. تحدد النوتة الجذرية نغمة البداية للنسب النقية.";
+"A4 säilyy valitussa taajuudessa. C-pohja vastaa historiallisen järjestelmän tavanomaista sijoitusta; muu pohjasävel siirtää koko virityskaavion." = "تظل نغمة A4 عند التردد المحدد. يستخدم جذر C تخطيط الضبط التاريخي التقليدي؛ جذر آخر ينقل نمط الضبط بأكمله.";
 "Tasavireinen asteikko" = "سلم متساوي التسوية";
 "12 säveltä / oktaavi" = "12 نوتة / أوكتاف";
 "24 säveltä / oktaavi" = "24 نوتة / أوكتاف";
@@ -79,7 +79,7 @@
 "Poista sointu" = "حذف الوتر";
 "Pythagoralainen" = "ضبط فيثاغورس";
 "Tasaiset sävelvälit. Sopii yleiskäyttöön ja 24 sävelen asteikkoon." = "فترات متساوية. مناسبة للاستخدام العام ومقياس 24 ملاحظة.";
-"Puhtaat suhteet valitusta pohjasävelestä: duuriterssi 5:4, molliterssi 6:5 ja kvintti 3:2. Sopii kuoron sointuharjoitteluun. Viritys on kiinteä: vaihda pohjasäveltä harmonian mukaan. Kaikki muiden pohjasävelten soinnut eivät ole puhtaita." = "النسب النقية من الجذر المختار: الثلث الأكبر 5:4، الثلث الأصغر 6:5 والخامس 3:2. مفيدة لممارسة وتر جوقة. هذا ضبط ثابت: غيّر الجذر بالانسجام. ليست كل الحبال الموجودة على الجذور الأخرى نقية.";
+"Puhtaat suhteet valitusta pohjasävelestä: duuriterssi 5:4, molliterssi 6:5 ja kvintti 3:2. Sopii kuoron sointuharjoitteluun. Viritys on kiinteä: vaihda pohjasäveltä harmonian mukaan. Kaikki muiden pohjasävelten soinnut eivät ole puhtaita." = "النسب النقية من الجذر المختار: الثلث الأكبر 5:4، الثلث الأصغر 6:5 والخامس 3:2. مفيدة لتدريب الجوقة على التآلفات. هذا ضبط ثابت: غيّر الجذر بالانسجام. ليست كل التآلفات المبنية على نغمات أساسية أخرى نقية.";
 "Neljä kvinttiä on kavennettu ¼ pythagoralaisella kommalla. Historiallinen kiertävä viritys: sävellajeilla on erilainen väri." = "أربعة أخماس تضيق بربع فاصلة فيثاغورس. مزاج تاريخي متداول: المفاتيح لها ألوان مختلفة.";
 "Neljä kvinttiä on kavennettu ¼ syntonisella kommalla; yksi kvintti korjaa skisman. C-pohjalla C–E-terssi on puhdas." = "أربعة أخماس تضيق بربع الفاصلة النحوية؛ الخمس يعوض عن الانشقاق. مع الجذر C، يكون الثلث C-E نقيًا.";
 "Kuusi kvinttiä on kavennettu ⅙ pythagoralaisella kommalla. Kiertävä viritys myöhäisbarokin ja klassisen ohjelmiston harjoitteluun." = "ستة أخماس تضيق بسدس الفاصلة الفيثاغورية. مزاج متداول للذخيرة الباروكية والكلاسيكية المتأخرة.";

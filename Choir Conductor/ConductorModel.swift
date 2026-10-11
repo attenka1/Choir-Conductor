@@ -8,34 +8,41 @@ enum SoundMode: String, CaseIterable {
 }
 
 @MainActor final class ConductorModel: ObservableObject {
-    let recordings = RecordingManager()
-    @Published var tempo: Int { didSet { save(); configure() } }
-    @Published var meter: Int { didSet { save(); resetMeter() } }
-    @Published var denominator: Int { didSet { save(); resetMeter() } }
-    @Published var compound: Bool { didSet { save(); resetMeter() } }
-    @Published var tuning: Double { didSet { save(); configure() } }
-    @Published var pianoVolume: Double { didSet { save(); configure() } }
-    @Published var clickVolume: Double { didSet { save(); configure() } }
-    @Published var international: Bool { didSet { save() } }
-    @Published var divisions: Int { didSet {
+    let recordings: RecordingManager
+    private let session: AudioSessionCoordinator
+    private var beatUpdates: AnyCancellable?
+    private var idleStop: Task<Void, Never>?
+    private var applyingProfile = false
+    private struct PitchProfile: Equatable { let tuning: Double; let temperament: Temperament; let root: Int }
+    private var appliedPitch: PitchProfile?
+    @Published var tempo: Int { didSet { guard !applyingProfile else { return }; save(); configure() } }
+    @Published var meter: Int { didSet { guard !applyingProfile else { return }; save(); resetMeter() } }
+    @Published var denominator: Int { didSet { guard !applyingProfile else { return }; save(); resetMeter() } }
+    @Published var compound: Bool { didSet { guard !applyingProfile else { return }; save(); resetMeter() } }
+    @Published var tuning: Double { didSet { guard !applyingProfile else { return }; save(); configure() } }
+    @Published var pianoVolume: Double { didSet { guard !applyingProfile else { return }; save(); configure() } }
+    @Published var clickVolume: Double { didSet { guard !applyingProfile else { return }; save(); configure() } }
+    @Published var international: Bool { didSet { guard !applyingProfile else { return }; save() } }
+    @Published var divisions: Int { didSet { guard !applyingProfile else { return };
         silencePiano()
         if divisions == 24 && temperament != .equal { temperament = .equal }
         save(); configure()
     } }
-    @Published var temperament: Temperament { didSet {
+    @Published var temperament: Temperament { didSet { guard !applyingProfile else { return };
         silencePiano()
         if temperament != .equal && divisions == 24 { divisions = 12 }
         save(); configure()
     } }
-    @Published var tuningRoot: Int { didSet { silencePiano(); save(); configure() } }
-    var rootNames: [String] { international ? ["C", "C♯", "D", "E♭", "E", "F", "F♯", "G", "G♯", "A", "B♭", "B"] : ["C", "C♯", "D", "Es", "E", "F", "Fis", "G", "Gis", "A", "B", "H"] }
+    @Published var tuningRoot: Int { didSet { guard !applyingProfile else { return }; silencePiano(); save(); configure() } }
+    var rootNames: [String] { NoteNaming.pitchClasses(international: international) }
+    var keyNames: [String] { NoteNaming.pitchClasses(international: international, temperament: temperament, root: tuningRoot) }
     var tuningLabel: String { tuning.formatted(.number.precision(.fractionLength(0...2))) }
     var tuningSummary: String { "A4 = \(tuningLabel) Hz · " + (temperament == .equal ? T("%@ säv.", String(divisions)) : "\(temperament.title) · \(rootNames[tuningRoot])") }
-    @Published var referenceSound: ReferenceSound { didSet { silencePiano(); save(); configure() } }
-    @Published var soundMode: SoundMode = .piano { didSet { silencePiano() } }
+    @Published var referenceSound: ReferenceSound { didSet { guard !applyingProfile else { return }; silencePiano(); save(); configure() } }
+    @Published var soundMode: SoundMode = .piano { didSet { guard !applyingProfile else { return }; silencePiano() } }
     @Published var running = false
     @Published var beat = -1
-    @Published var sustain = false { didSet { if !sustain { releaseUnpressed() } } }
+    @Published var sustain = false { didSet { guard !applyingProfile else { return }; if !sustain { releaseUnpressed() } } }
     @Published var sounding: Set<Double> = []
     @Published var octave = 3
     @Published var error: String?
@@ -56,6 +63,9 @@ enum SoundMode: String, CaseIterable {
         }
     }
     init() {
+        let coordinator = AudioSessionCoordinator()
+        session = coordinator
+        recordings = RecordingManager(session: coordinator)
         let d = UserDefaults.standard
         referenceSound = ReferenceSound(rawValue: d.string(forKey: "referenceSound") ?? "precise") ?? .precise
         tempo = min(240, max(30, d.object(forKey: "tempo") as? Int ?? 80))
@@ -73,21 +83,27 @@ enum SoundMode: String, CaseIterable {
         pianoVolume = min(1, max(0, d.object(forKey: "pianoVolume") as? Double ?? 0.7))
         clickVolume = min(1, max(0, d.object(forKey: "clickVolume") as? Double ?? 0.6))
         international = d.bool(forKey: "international")
-        do { audio = try ChoirAudio(); configure() } catch { self.error = error.localizedDescription }
+        do { audio = try ChoirAudio(session: coordinator); configure() } catch { self.error = error.localizedDescription }
         do { savedChords = try ChordStore.load(from: d) } catch { self.error = T("Tallennettuja sointuja ei voitu lukea: ") + error.localizedDescription }
+        coordinator.onChange = { [weak self] in self?.refreshIdleTimer() }
+        coordinator.onError = { [weak self] in self?.error = $0.localizedDescription }
         recordings.prepareSession = { [weak self] in self?.stopSound() }
-        Timer.publish(every: 1 / 30, on: .main, in: .common).autoconnect().sink { [weak self] _ in
-            guard let self, let audio = self.audio else { return }
-            audio.renderer.update { self.beat = $0.beat }
-        }.store(in: &subscriptions)
-        NotificationCenter.default.publisher(for: AVAudioSession.interruptionNotification).sink { [weak self] _ in
-            Task { @MainActor in self?.stopAll() }
+        NotificationCenter.default.publisher(for: AVAudioSession.interruptionNotification).sink { [weak self] notification in
+            let raw = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+            Task { @MainActor in
+                guard let self else { return }
+                if raw == AVAudioSession.InterruptionType.began.rawValue {
+                    self.session.interruptionBegan(); self.stopAll()
+                } else if raw == AVAudioSession.InterruptionType.ended.rawValue {
+                    self.session.interruptionEnded()
+                }
+            }
         }.store(in: &subscriptions)
         NotificationCenter.default.publisher(for: AVAudioSession.routeChangeNotification).sink { [weak self] notification in
             let reason = notification.userInfo?[AVAudioSessionRouteChangeReasonKey] as? UInt
             if reason == AVAudioSession.RouteChangeReason.oldDeviceUnavailable.rawValue { Task { @MainActor in self?.stopAll() } }
         }.store(in: &subscriptions)
-        NotificationCenter.default.publisher(for: .AVAudioEngineConfigurationChange).sink { [weak self] _ in
+        NotificationCenter.default.publisher(for: .AVAudioEngineConfigurationChange, object: audio?.engine).sink { [weak self] _ in
             Task { @MainActor in self?.recoverAudioConfiguration() }
         }.store(in: &subscriptions)
     }
@@ -99,16 +115,27 @@ enum SoundMode: String, CaseIterable {
         d.set(divisions, forKey: "divisions"); d.set(tuning, forKey: "tuning"); d.set(pianoVolume, forKey: "pianoVolume"); d.set(clickVolume, forKey: "clickVolume"); d.set(international, forKey: "international")
     }
     private func configure() {
+        if referenceSound == .soundFont, let audio, !audio.reference.soundFontAvailable {
+            referenceSound = .precise
+            error = T("Viritysäänen SoundFont puuttuu.")
+            return
+        }
         audio?.reference.configure(tuning: tuning, volume: pianoVolume, temperament: temperament, root: tuningRoot, sound: referenceSound)
-        audio?.renderer.update { $0.tempo = Double(tempo); $0.beats = beatCount; $0.tuning = Double(tuning); $0.pianoVolume = Float(pianoVolume); $0.clickVolume = Float(clickVolume)
-            for index in 0..<97 {
+        guard let audio else { return }
+        let profile = PitchProfile(tuning: tuning, temperament: temperament, root: tuningRoot)
+        var pitches: [Double]?
+        if profile != appliedPitch {
+            // Expensive frequency calculations happen outside the control mailbox.
+            pitches = (0..<97).map { index in
                 let note = Double(index) / 2 + 36
                 let source = min(79, max(55, Int(note.rounded())))
-                $0.steps[index] = temperament.frequency(note: note, a4: tuning, root: tuningRoot) / $0.frequencies[source - 55]
+                return temperament.frequency(note: note, a4: tuning, root: tuningRoot) / audio.renderer.frequencies[source - 55]
             }
+            appliedPitch = profile
         }
+        audio.renderer.configure(tempo: Double(tempo), beats: beatCount, piano: Float(pianoVolume), click: Float(clickVolume), pitches: pitches)
     }
-    private func resetMeter() { configure(); audio?.renderer.update { $0.beat = -1; $0.remaining = 0 }; beat = -1 }
+    private func resetMeter() { configure(); audio?.renderer.setMetronome(running: running, reset: true); beat = -1 }
     func setTempo(_ value: Int) { tempo = min(240, max(30, value)) }
     private func recoverAudioConfiguration() {
         // Starting microphone recording can change the hardware format. Resume the
@@ -117,39 +144,42 @@ enum SoundMode: String, CaseIterable {
         _ = ensureAudio()
     }
     private func ensureAudio() -> Bool {
+        idleStop?.cancel(); idleStop = nil
         guard let audio else { return false }
         do { try audio.start(); return true } catch { self.error = error.localizedDescription; stopAll(); return false }
     }
     func toggleMetronome() {
         if !running && !ensureAudio() { return }
         running.toggle()
-        audio?.renderer.update { $0.running = running; $0.beat = -1; $0.remaining = 0; $0.clickAge = 10000 }
+        audio?.renderer.setMetronome(running: running, reset: true)
         beat = -1
-        UIApplication.shared.isIdleTimerDisabled = running
+        updateBeatTracking(); refreshIdleTimer(); scheduleIdleStop()
     }
     func noteDown(_ note: Double) {
         guard note.isFinite, (36...84).contains(note), note * 2 == (note * 2).rounded(), ensureAudio() else { return }
         if soundMode == .reference {
             sounding = [note]
             audio?.reference.play(note)
+            refreshIdleTimer()
             return
         }
         pressed.insert(note)
         if sustain && sounding.contains(note) { release(note); return }
         sounding.insert(note)
-        audio?.renderer.update { $0.voices[Int((note - 36) * 2)].held = true; $0.voices[Int((note - 36) * 2)].position = 0; $0.voices[Int((note - 36) * 2)].gain = 0 }
+        audio?.renderer.startNotes([note])
     }
     func noteUp(_ note: Double) { if soundMode == .reference { return }; pressed.remove(note); if !sustain { release(note) } }
     func noteCancelled(_ note: Double) {
         if soundMode == .reference { if sounding.contains(note) { silencePiano() }; return }
         pressed.remove(note); release(note)
     }
-    private func release(_ note: Double) { sounding.remove(note); audio?.renderer.update { $0.voices[Int((note - 36) * 2)].held = false } }
+    private func release(_ note: Double) { sounding.remove(note); audio?.renderer.releaseNote(note); refreshIdleTimer(); scheduleIdleStop() }
     private func releaseUnpressed() { guard soundMode == .piano else { return }; for note in sounding.subtracting(pressed) { release(note) } }
     func silencePiano() {
         audio?.reference.stop()
         pressed.removeAll()
         for note in sounding { release(note) }
+        refreshIdleTimer(); scheduleIdleStop()
     }
     func prepareChordSelection() {
         soundMode = .piano
@@ -157,8 +187,7 @@ enum SoundMode: String, CaseIterable {
         sustain = true
     }
     func noteLabel(_ note: Double) -> String {
-        let midi = Int(note.rounded(.down))
-        return rootNames[midi % 12] + String(midi / 12 - 1) + (note != Double(midi) ? "↑" : "")
+        NoteNaming.label(note, names: keyNames)
     }
     @discardableResult func saveCurrentChord(name: String) -> Bool {
         guard soundMode == .piano, !sounding.isEmpty else { return false }
@@ -177,28 +206,50 @@ enum SoundMode: String, CaseIterable {
     }
     func deleteChord(_ chord: SavedChord) { updateChords(savedChords.filter { $0.id != chord.id }) }
     @discardableResult func playChord(_ chord: SavedChord) -> Bool {
-        guard chord.isValid else { return false }
+        // Audio preparation is the only fallible step; do it before committing settings.
+        guard chord.isValid, ensureAudio() else { return false }
         silencePiano()
+        idleStop?.cancel(); idleStop = nil
+        applyingProfile = true
         soundMode = .piano
         divisions = chord.divisions
         temperament = chord.temperament
         tuningRoot = chord.root
         tuning = chord.tuning
         sustain = true
-        guard ensureAudio() else { return false }
+        applyingProfile = false
+        save(); configure()
         sounding = Set(chord.notes)
         // Start every voice in the same audio-buffer boundary, without per-key engine starts.
-        audio?.renderer.update { state in
-            for note in chord.notes {
-                let index = Int((note - 36) * 2)
-                state.voices[index].held = true
-                state.voices[index].position = 0
-                state.voices[index].gain = 0
-            }
-        }
+        audio?.renderer.startNotes(chord.notes)
         octave = min(4, max(2, Int(chord.notes.min()! / 12) - 1))
         return true
     }
-    func stopSound() { running = false; beat = -1; pressed.removeAll(); sounding.removeAll(); audio?.silence(deactivateSession: !recordings.recording); UIApplication.shared.isIdleTimerDisabled = false }
+    private func updateBeatTracking() {
+        beatUpdates?.cancel(); beatUpdates = nil
+        guard running else { return }
+        beatUpdates = Timer.publish(every: 1 / 30, on: .main, in: .common).autoconnect().sink { [weak self] _ in
+            guard let self, let audio = self.audio else { return }
+            let next = audio.renderer.currentBeat
+            if self.beat != next { self.beat = next }
+        }
+    }
+    private func refreshIdleTimer() {
+        UIApplication.shared.isIdleTimerDisabled = running || session.clients.contains(.recording) || (soundMode == .reference && !sounding.isEmpty)
+    }
+    private func scheduleIdleStop() {
+        guard !running, sounding.isEmpty else { return }
+        idleStop?.cancel()
+        idleStop = Task { @MainActor [weak self] in
+            do { try await Task.sleep(nanoseconds: 300_000_000) } catch { return }
+            guard let self, !self.running, self.sounding.isEmpty else { return }
+            self.audio?.silence(); self.idleStop = nil
+        }
+    }
+    func stopSound() {
+        idleStop?.cancel(); idleStop = nil
+        running = false; beat = -1; pressed.removeAll(); sounding.removeAll()
+        audio?.silence(); updateBeatTracking(); refreshIdleTimer()
+    }
     func stopAll() { recordings.stopAll(); stopSound() }
 }

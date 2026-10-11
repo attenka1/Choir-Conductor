@@ -54,7 +54,7 @@ struct ContentView: View {
         .environment(\.locale, Locale(identifier: appLanguage))
         .environment(\.layoutDirection, AppLanguage.isRTL(appLanguage) ? .rightToLeft : .leftToRight)
         .alert(T("Toiminto ei onnistunut"), isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) { Button(T("OK")) { model.error = nil } } message: { Text(model.error ?? "") }
-        .onChange(of: scenePhase) { _, phase in if phase == .background { model.stopAll() } else if phase == .inactive { model.stopSound() } }
+        .onChange(of: scenePhase) { _, phase in if phase == .background { model.stopAll() } }
     }
     private func localized<V: View>(_ view: V) -> some View {
         view.id(appLanguage)

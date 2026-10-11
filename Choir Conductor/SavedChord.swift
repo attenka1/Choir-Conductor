@@ -21,12 +21,25 @@ struct SavedChord: Codable, Identifiable, Equatable {
 enum ChordStore {
     static let key = "savedChords.v1"
     static func load(from defaults: UserDefaults) throws -> [SavedChord] {
-        guard let data = defaults.data(forKey: key) else { return [] }
-        let chords = try JSONDecoder().decode([SavedChord].self, from: data)
-        try validate(chords)
-        return chords
+        guard let stored = defaults.object(forKey: key) else { return [] }
+        guard let data = stored as? Data else {
+            let backupKey = key + ".unreadableBackup"
+            if defaults.object(forKey: backupKey) == nil { defaults.set(stored, forKey: backupKey) }
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        do {
+            let chords = try JSONDecoder().decode([SavedChord].self, from: data)
+            try validate(chords)
+            return chords
+        } catch {
+            // Keep both the original and a recovery copy. A new save must not overwrite corruption.
+            let backupKey = key + ".unreadableBackup"
+            if defaults.data(forKey: backupKey) == nil { defaults.set(data, forKey: backupKey) }
+            throw error
+        }
     }
     static func save(_ chords: [SavedChord], to defaults: UserDefaults) throws {
+        _ = try load(from: defaults)
         try validate(chords)
         defaults.set(try JSONEncoder().encode(chords), forKey: key)
     }

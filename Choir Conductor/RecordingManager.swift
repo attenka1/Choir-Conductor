@@ -9,6 +9,7 @@ import Combine
     @Published private(set) var elapsed: Double = 0
     @Published private(set) var playing: UUID?
     @Published var error: String?
+    private let session: AudioSessionCoordinator
     var prepareSession: (() -> Void)?
     private var recorder: AVAudioRecorder?
     private var player: AVAudioPlayer?
@@ -18,8 +19,9 @@ import Combine
     private let directory: URL
     private var store: RecordingStore { RecordingStore(directory: directory) }
 
-    override init() {
-        directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Recordings", isDirectory: true)
+    init(session: AudioSessionCoordinator, directory directoryURL: URL? = nil) {
+        self.session = session
+        self.directory = directoryURL ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Recordings", isDirectory: true)
         super.init()
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -39,6 +41,8 @@ import Combine
             recordings = recordings.filter { FileManager.default.fileExists(atPath: url($0).path) }.sorted { $0.date > $1.date }
             try persist()
         } catch { self.error = error.localizedDescription }
+    }
+    private func startElapsedUpdates() {
         timer = Timer.publish(every: 0.2, on: .main, in: .common).autoconnect().sink { [weak self] _ in
             guard let self, self.recording else { return }; self.elapsed = self.recorder?.currentTime ?? 0
         }
@@ -54,23 +58,27 @@ import Combine
         requestingPermission = false
         guard granted else { error = T("Salli mikrofonin käyttö iPhonen asetuksissa."); return }
         stopPlayback()
+        let item = RehearsalRecording(id: UUID(), name: T("Tallenne"), date: Date(), duration: 0)
         do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothHFP, .mixWithOthers])
-            try session.setActive(true)
-            let item = RehearsalRecording(id: UUID(), name: T("Tallenne"), date: Date(), duration: 0)
+            try session.begin(.recording)
             let newRecorder = try AVAudioRecorder(url: url(item), settings: [AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: 44100, AVNumberOfChannelsKey: 1, AVEncoderAudioQualityKey: AVAudioQuality.high.rawValue, AVEncoderBitRateKey: 128000])
             newRecorder.delegate = self
             guard newRecorder.prepareToRecord(), newRecorder.record() else { throw CocoaError(.fileWriteUnknown) }
-            current = item; recorder = newRecorder; elapsed = 0; recording = true
-        } catch { self.error = error.localizedDescription }
+            current = item; recorder = newRecorder; elapsed = 0; recording = true; startElapsedUpdates()
+        } catch {
+            session.end(.recording)
+            try? FileManager.default.removeItem(at: url(item))
+            self.error = error.localizedDescription
+        }
     }
     func stop() {
         requestGeneration += 1; requestingPermission = false
+        timer?.cancel(); timer = nil
         guard let recorder, var item = current else { return }
         let capturedDuration = max(recorder.currentTime, elapsed)
         self.recorder = nil; current = nil; recording = false
         recorder.stop()
+        session.end(.recording)
         // currentTime can reset when a system interruption finishes the recorder.
         // Read the finalized file so a completed recording is never mistaken for an empty one.
         item.duration = (try? AVAudioPlayer(contentsOf: url(item)).duration) ?? capturedDuration
@@ -82,19 +90,21 @@ import Combine
         if playing == item.id { stopPlayback(); return }
         stop(); stopPlayback(); prepareSession?()
         do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers]); try session.setActive(true)
+            try session.begin(.playback)
             let newPlayer = try AVAudioPlayer(contentsOf: url(item)); newPlayer.delegate = self
             guard newPlayer.play() else { throw CocoaError(.fileReadUnknown) }
             player = newPlayer; playing = item.id
-        } catch { self.error = error.localizedDescription }
+        } catch { session.end(.playback); self.error = error.localizedDescription }
     }
-    func stopPlayback() { player?.stop(); player = nil; playing = nil }
+    func stopPlayback() { player?.stop(); player = nil; playing = nil; session.end(.playback) }
     func stopAll() { stop(); stopPlayback() }
     func rename(_ item: RehearsalRecording, to name: String) {
         let clean = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !clean.isEmpty, clean.count <= 100, let i = recordings.firstIndex(where: { $0.id == item.id }) else { return }
-        recordings[i].name = clean; save()
+        var updated = recordings
+        updated[i].name = clean
+        do { try store.save(updated); recordings = updated }
+        catch { self.error = error.localizedDescription }
     }
     func delete(_ item: RehearsalRecording) {
         if playing == item.id { stopPlayback() }
@@ -110,7 +120,16 @@ import Combine
         }
     }
     nonisolated func audioRecorderEncodeErrorDidOccur(_ recorder: AVAudioRecorder, error: Error?) {
-        Task { @MainActor [weak self] in self?.stop(); self?.error = error?.localizedDescription ?? T("Äänitys keskeytyi.") }
+        Task { @MainActor [weak self] in
+            guard let self, self.recorder === recorder else { return }
+            self.stop(); self.error = error?.localizedDescription ?? T("Äänitys keskeytyi.")
+        }
+    }
+    nonisolated func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        Task { @MainActor [weak self] in
+            guard let self, self.player === player else { return }
+            self.stopPlayback(); self.error = error?.localizedDescription ?? T("Äänitys keskeytyi.")
+        }
     }
     nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         Task { @MainActor [weak self] in guard self?.player === player else { return }; self?.stopPlayback() }

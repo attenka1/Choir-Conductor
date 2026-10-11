@@ -7,6 +7,7 @@ enum ReferenceSound: String, CaseIterable {
 
 /// Reference playback shares the existing engine; its gain envelope is independent of the metronome.
 @MainActor final class ReferenceTone {
+    private(set) var soundFontAvailable = false
     private let sampler = AVAudioUnitSampler()
     private let mixer = AVAudioMixerNode()
     private let oscillator = ReferenceOscillator()
@@ -21,15 +22,18 @@ enum ReferenceSound: String, CaseIterable {
     private var volume: Float = 0.7 * 0.35
 
     init(engine: AVAudioEngine, soundFontURL: URL? = nil) throws {
-        guard let url = soundFontURL ?? Bundle.main.url(forResource: "GeneralUser-GS", withExtension: "sf2", subdirectory: "SoundFonts") ?? Bundle.main.url(forResource: "GeneralUser-GS", withExtension: "sf2") else {
-            throw NSError(domain: "ChoirAudio", code: 4, userInfo: [NSLocalizedDescriptionKey: T("Viritysäänen SoundFont puuttuu.")])
-        }
+        let url = soundFontURL ?? Bundle.main.url(forResource: "GeneralUser-GS", withExtension: "sf2", subdirectory: "SoundFonts") ?? Bundle.main.url(forResource: "GeneralUser-GS", withExtension: "sf2")
         engine.attach(sampler)
         engine.attach(mixer)
         engine.connect(sampler, to: mixer, format: nil)
         engine.connect(mixer, to: engine.mainMixerNode, format: nil)
         // GM Pipe Organ (zero-based program 19), with sustained loops in this bank.
-        try sampler.loadSoundBankInstrument(at: url, program: 19, bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB), bankLSB: 0)
+        if let url {
+            do {
+                try sampler.loadSoundBankInstrument(at: url, program: 19, bankMSB: UInt8(kAUSampler_DefaultMelodicBankMSB), bankLSB: 0)
+                soundFontAvailable = true
+            } catch { soundFontAvailable = false }
+        }
         sampler.sendController(1, withValue: 0, onChannel: 0) // No added modulation.
         sampler.sendController(91, withValue: 0, onChannel: 0)
         sampler.sendController(93, withValue: 0, onChannel: 0)
@@ -45,7 +49,7 @@ enum ReferenceSound: String, CaseIterable {
     }
     func configure(tuning: Double, volume: Double, temperament: Temperament = .equal, root: Int = 0, sound: ReferenceSound = .precise) {
         if self.sound != sound { stop(immediately: true) }
-        self.sound = sound
+        self.sound = sound == .soundFont && !soundFontAvailable ? .precise : sound
         self.tuning = tuning
         self.temperament = temperament
         self.root = root
