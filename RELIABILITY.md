@@ -34,3 +34,13 @@ Additional existing standalone checks exercise sample-clock metronome timing, al
 7. Listen to C2–C6, especially C2–F3. Current samples span G3–G5; lower notes still use substantial downward transposition. Bass timbre needs listening and potentially additional original bass samples, not an unverified pitch-shift replacement.
 
 No claim is made of real microphone, Bluetooth, speaker listening, device pitch, VoiceOver user testing or physical multitouch verification. Background recording has not been added. Full translation review and per-sample loop optimization remain follow-up work.
+
+## Android planning and analysis experiment, 2026-10-16
+
+The current iOS working tree is preserved by commit `a45c5b7`. Android
+requirements and architecture are in `SPEC.md` and `ARCHITECTURE.md`;
+`ANDROID_STATUS.md` distinguishes completed checks from remaining work.
+`AnalysisLab/README.md` documents the synthetic pitch-drift experiment.
+The older statement about no external runtime dependencies does not cover
+the subsequently added Google Mobile Ads / UMP integration. No iOS runtime
+source was changed for this Android preparation.

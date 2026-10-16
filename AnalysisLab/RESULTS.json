@@ -1,0 +1,147 @@
+{
+  "sample_rate": 22050,
+  "experimental": true,
+  "real_choir_validated": false,
+  "results": [
+    {
+      "case": "stable_changing_harmony",
+      "harmonic_filter": false,
+      "coverage": 0.9459459459459459,
+      "median_error_cents": 0.058626907185953314,
+      "p95_error_cents": 0.6109902749219642,
+      "maximum_error_cents": 0.7731119100967518,
+      "runtime_seconds": 0.04708249999999997,
+      "synthetic_gate": true
+    },
+    {
+      "case": "stable_changing_harmony",
+      "harmonic_filter": true,
+      "coverage": 0.918918918918919,
+      "median_error_cents": 0.0006354043741652049,
+      "p95_error_cents": 0.3139972900912027,
+      "maximum_error_cents": 2.1415004975095258,
+      "runtime_seconds": 0.045450667,
+      "synthetic_gate": true
+    },
+    {
+      "case": "fall_30c",
+      "harmonic_filter": false,
+      "coverage": 0.9459459459459459,
+      "median_error_cents": 0.09116016799305271,
+      "p95_error_cents": 0.19797634387779206,
+      "maximum_error_cents": 0.25711994837232055,
+      "runtime_seconds": 0.04471604100000004,
+      "synthetic_gate": true
+    },
+    {
+      "case": "fall_30c",
+      "harmonic_filter": true,
+      "coverage": 0.9459459459459459,
+      "median_error_cents": 0.0015494940880738106,
+      "p95_error_cents": 0.002874759351057676,
+      "maximum_error_cents": 0.003600698789377077,
+      "runtime_seconds": 0.04758858299999996,
+      "synthetic_gate": true
+    },
+    {
+      "case": "fall_120c",
+      "harmonic_filter": false,
+      "coverage": 0.9649122807017544,
+      "median_error_cents": 0.09302869927168445,
+      "p95_error_cents": 0.23535162397124906,
+      "maximum_error_cents": 0.3095846417021306,
+      "runtime_seconds": 0.065195208,
+      "synthetic_gate": true
+    },
+    {
+      "case": "fall_120c",
+      "harmonic_filter": true,
+      "coverage": 0.9649122807017544,
+      "median_error_cents": 0.000744830869862767,
+      "p95_error_cents": 0.0021972671954397782,
+      "maximum_error_cents": 0.0032093341930448105,
+      "runtime_seconds": 0.08727866699999998,
+      "synthetic_gate": true
+    },
+    {
+      "case": "short_wrong_note",
+      "harmonic_filter": false,
+      "coverage": 0.9459459459459459,
+      "median_error_cents": 0.0833811325469398,
+      "p95_error_cents": 0.18736149719911868,
+      "maximum_error_cents": 0.2494740615355866,
+      "runtime_seconds": 0.04789008300000008,
+      "synthetic_gate": true
+    },
+    {
+      "case": "short_wrong_note",
+      "harmonic_filter": true,
+      "coverage": 0.918918918918919,
+      "median_error_cents": 0.000641374549513074,
+      "p95_error_cents": 0.004175955883428626,
+      "maximum_error_cents": 0.016607299548041965,
+      "runtime_seconds": 0.044952459,
+      "synthetic_gate": true
+    },
+    {
+      "case": "opposite_phase_stereo",
+      "harmonic_filter": false,
+      "coverage": 0.9459459459459459,
+      "median_error_cents": 0.0833811325469398,
+      "p95_error_cents": 0.18736149719911868,
+      "maximum_error_cents": 0.2494740615355866,
+      "runtime_seconds": 0.08584162500000003,
+      "synthetic_gate": true
+    },
+    {
+      "case": "opposite_phase_stereo",
+      "harmonic_filter": true,
+      "coverage": 0.9459459459459459,
+      "median_error_cents": 0.0004351381061127313,
+      "p95_error_cents": 0.0008416817934659092,
+      "maximum_error_cents": 0.0008576111432674338,
+      "runtime_seconds": 0.08015841600000007,
+      "synthetic_gate": true
+    },
+    {
+      "case": "natural_chords_fixed_reference",
+      "harmonic_filter": false,
+      "coverage": 0.8771929824561403,
+      "median_error_cents": 0.04579365552980619,
+      "p95_error_cents": 0.055675389843575826,
+      "maximum_error_cents": 0.5422909234289008,
+      "runtime_seconds": 0.05228337499999991,
+      "synthetic_gate": true
+    },
+    {
+      "case": "natural_chords_fixed_reference",
+      "harmonic_filter": true,
+      "coverage": 0.8596491228070176,
+      "median_error_cents": 0.000849118159884199,
+      "p95_error_cents": 0.006973723670367298,
+      "maximum_error_cents": 1.274404824359486,
+      "runtime_seconds": 0.05425033299999993,
+      "synthetic_gate": true
+    },
+    {
+      "case": "dominant_detuned_voice",
+      "harmonic_filter": false,
+      "coverage": 0.9459459459459459,
+      "median_error_cents": 0.07015581841029217,
+      "p95_error_cents": 0.18736149719911868,
+      "maximum_error_cents": 0.2494740615355866,
+      "runtime_seconds": 0.03438000000000008,
+      "synthetic_gate": true
+    },
+    {
+      "case": "dominant_detuned_voice",
+      "harmonic_filter": true,
+      "coverage": 0.9459459459459459,
+      "median_error_cents": 0.0004351381061127313,
+      "p95_error_cents": 0.0008414199265963872,
+      "maximum_error_cents": 0.0008565232739812245,
+      "runtime_seconds": 0.035528167000000055,
+      "synthetic_gate": true
+    }
+  ]
+}

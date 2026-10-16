@@ -1,0 +1,2 @@
+# Development experiment only; not an Android runtime dependency.
+numpy==2.0.2
