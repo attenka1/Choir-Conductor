@@ -1,4 +1,4 @@
-# Choir Conductor: reliability changes, 2026-10-11
+# Choir Master: reliability changes, 2026-10-11
 
 ## Implemented
 
@@ -15,7 +15,7 @@
 - Keyboard geometry/accessibility elements are rebuilt only when necessary. VoiceOver activation plays a short note, with sustain/reference behavior preserved. The 24-note black halves are at least 44 points wide; the keyboard scrolls to cover the larger range. Deliberate swipe threshold is 24 points. VoiceOver horizontal scrolling is supported.
 - Sample fundamentals moved unchanged from the existing measurement CSV into bundled metadata. Format, frame count and loop bounds are validated before playback. Existing loop points and timbre are retained. Safe loop wrapping supports large playback steps.
 - Two identified Arabic terminology errors were corrected. Other translations remain drafts requiring human musical-language review.
-- App minimum iOS is explicitly 17.0, the same value previously resolved by the SDK setting. Existing app bundle identifier, development team and signing mode remain intact.
+- App minimum iOS is explicitly 17.0, the same value previously resolved by the SDK setting. The app is now named Choir Master. Its bundle identifier is `com.atte.tenkanen.ChoirConductor`, matching the existing App Store Connect record, with test ID `com.atte.tenkanen.ChoirConductor.Tests`. Development team and automatic signing remain unchanged.
 
 ## Verification
 
