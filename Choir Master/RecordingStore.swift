@@ -1,6 +1,6 @@
 import Foundation
 
-struct RehearsalRecording: Identifiable, Codable, Equatable {
+nonisolated struct RehearsalRecording: Identifiable, Codable, Equatable, Sendable {
     let id: UUID
     var name: String
     let date: Date
@@ -12,7 +12,7 @@ struct RehearsalRecording: Identifiable, Codable, Equatable {
     }
 }
 
-struct RecordingStore {
+nonisolated struct RecordingStore {
     let directory: URL
     var index: URL { directory.appendingPathComponent("index.json") }
     func url(_ item: RehearsalRecording) -> URL { directory.appendingPathComponent(item.filename) }

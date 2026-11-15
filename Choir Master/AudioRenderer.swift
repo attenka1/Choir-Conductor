@@ -40,6 +40,9 @@ nonisolated final class AudioRenderer: @unchecked Sendable {
     var clickAge = 10_000
     var accent = false
     let rate = 44100.0
+    private let sourceIndices = (0..<97).map { min(79, max(55, Int((Double($0) / 2 + 36).rounded()))) - 55 }
+    private var activeIndices = [Int](repeating: 0, count: 97)
+    private var activeCount = 0
 
     func configure(tempo: Double, beats: Int, piano: Float, click: Float, pitches: [Double]?) {
         lock.lock(); defer { lock.unlock() }
@@ -97,6 +100,11 @@ nonisolated final class AudioRenderer: @unchecked Sendable {
     }
     func render(_ count: Int, _ buffers: UnsafeMutablePointer<AudioBufferList>) {
         consumeControls()
+        activeCount = 0
+        for index in voices.indices where voices[index].held || voices[index].gain >= 0.00001 {
+            activeIndices[activeCount] = index
+            activeCount += 1
+        }
         let output = UnsafeMutableAudioBufferListPointer(buffers)
         for frame in 0..<count {
             var value: Float = 0
@@ -115,14 +123,14 @@ nonisolated final class AudioRenderer: @unchecked Sendable {
                 value += Float(sin(2 * .pi * (accent ? 1600 : 1000) * t) * envelope) * clickVolume * 0.28
                 clickAge += 1
             }
-            for index in 0..<97 {
+            for slot in 0..<activeCount {
+                let index = activeIndices[slot]
                 if !voices[index].held && voices[index].gain < 0.00001 { continue }
-                let note = Double(index) / 2 + 36
-                let source = min(79, max(55, Int(note.rounded())))
-                let data = samples[source - 55]
-                let end = loopEnds[source - 55]
-                let loopLength = loopLengths[source - 55]
-                let crossfade = crossfades[source - 55]
+                let source = sourceIndices[index]
+                let data = samples[source]
+                let end = loopEnds[source]
+                let loopLength = loopLengths[source]
+                let crossfade = crossfades[source]
                 if voices[index].position >= end {
                     voices[index].position = end - loopLength + (voices[index].position - end).truncatingRemainder(dividingBy: loopLength)
                 }

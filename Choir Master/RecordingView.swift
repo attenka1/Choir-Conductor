@@ -2,9 +2,11 @@ import SwiftUI
 
 struct RecordingView: View {
     @ObservedObject var manager: RecordingManager
+    let a4: Double
     @Environment(\.dismiss) private var dismiss
     @State private var renaming: RehearsalRecording?
     @State private var name = ""
+    @State private var analyzing: RehearsalRecording?
     @State private var deleting: RehearsalRecording?
     var body: some View {
         NavigationStack {
@@ -16,11 +18,14 @@ struct RecordingView: View {
                     } label: {
                         Label(T(manager.recording ? "Lopeta äänitys" : "Aloita äänitys"), systemImage: manager.recording ? "stop.circle.fill" : "record.circle")
                             .font(.title3.bold()).foregroundStyle(.white).frame(maxWidth: .infinity, minHeight: 52)
-                    }.buttonStyle(.borderedProminent).tint(.red).disabled(manager.requestingPermission)
+                    }.buttonStyle(.borderedProminent).tint(.red).disabled(manager.loading || manager.requestingPermission)
+                    Text(analysisText("Yhden tallenteen enimmäiskesto on 2 tuntia. Bluetooth-kuulokkeilla käytetään iPhonen mikrofonia, jotta toisto säilyy laadukkaana."))
+                        .font(.caption).foregroundStyle(.secondary)
                     Text(T("Äänitys käyttää mikrofonia. Tallenteet säilyvät tässä iPhonessa. Taustalle siirtyminen lopettaa ja tallentaa äänityksen.")).font(.caption).foregroundStyle(.secondary)
                 }
                 Section(T("Tallenteet")) {
-                    if manager.recordings.isEmpty { Text(T("Ei tallenteita vielä.")).foregroundStyle(.secondary) }
+                    if manager.loading { ProgressView() }
+                    if !manager.loading && manager.recordings.isEmpty { Text(T("Ei tallenteita vielä.")).foregroundStyle(.secondary) }
                     ForEach(manager.recordings) { item in
                         VStack(alignment: .leading, spacing: 8) {
                             Text(item.name).font(.headline)
@@ -29,6 +34,14 @@ struct RecordingView: View {
                                 Spacer()
                                 Text(Duration.seconds(item.duration).formatted(.time(pattern: .minuteSecond)))
                             }.font(.caption).foregroundStyle(.secondary)
+                            Button {
+                                manager.stopPlayback()
+                                analyzing = item
+                            } label: {
+                                Label(analysisText("Analysoi säveltaso"), systemImage: "chart.xyaxis.line")
+                            }
+                            .buttonStyle(.borderless)
+                            .disabled(manager.recording || manager.requestingPermission)
                             HStack {
                                 Button { manager.togglePlayback(item) } label: { Label(T(manager.playing == item.id ? "Pysäytä" : "Kuuntele"), systemImage: manager.playing == item.id ? "stop.fill" : "play.fill") }.disabled(manager.recording || manager.requestingPermission)
                                 Spacer()
@@ -42,6 +55,9 @@ struct RecordingView: View {
                     }
                 }
             }.navigationTitle(T("Äänitys"))
+                .sheet(item: $analyzing) { item in
+                    RecordingAnalysisView(manager: manager, item: item, a4: a4)
+                }
                 .toolbar { ToolbarItem(placement: .confirmationAction) { Button(T("Valmis")) { dismiss() } } }
                 .alert(T("Nimeä uudelleen"), isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
                     TextField(T("Nimi"), text: $name)

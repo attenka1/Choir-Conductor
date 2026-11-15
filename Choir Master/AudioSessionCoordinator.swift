@@ -21,9 +21,12 @@ import AVFoundation
 
 /// The only owner of AVAudioSession. Clients describe their actual audio needs.
 @MainActor final class AudioSessionCoordinator {
-    enum Client: Hashable { case sound, recording, playback }
+    enum Client: Hashable { case sound, recording, playback, tuner }
     private let driver: any AudioSessionDriving
     init(driver: (any AudioSessionDriving)? = nil) { self.driver = driver ?? SystemAudioSession() }
+    // Session claims are released explicitly. Avoid the isolated-deinit back-deployment
+    // runtime path, which crashes on the iOS 18.5 simulator with this toolchain.
+    nonisolated deinit {}
     private(set) var clients: Set<Client> = []
     private var active = false
     private var interrupted = false
@@ -33,6 +36,11 @@ import AVFoundation
     func begin(_ client: Client) throws {
         guard !interrupted else { throw CocoaError(.userCancelled) }
         guard !clients.contains(client) else { return }
+        // The tuner owns microphone capture, but an explicitly enabled reference may play.
+        guard client == .tuner ? clients.subtracting([.sound]).isEmpty :
+                (!clients.contains(.tuner) || client == .sound) else {
+            throw CocoaError(.userCancelled)
+        }
         let previous = clients
         clients.insert(client)
         do { try reconcile(); onChange?() }
@@ -63,9 +71,9 @@ import AVFoundation
             }
             return
         }
-        let recording = clients.contains(.recording)
-        let category: AVAudioSession.Category = recording ? .playAndRecord : .playback
-        let options: AVAudioSession.CategoryOptions = recording ? [.defaultToSpeaker, .allowBluetoothHFP, .mixWithOthers] : [.mixWithOthers]
+        let needsInput = clients.contains(.recording) || clients.contains(.tuner)
+        let category: AVAudioSession.Category = needsInput ? .playAndRecord : .playback
+        let options: AVAudioSession.CategoryOptions = needsInput ? [.defaultToSpeaker, .allowBluetoothA2DP, .mixWithOthers] : [.mixWithOthers]
         if session.category != category || session.categoryOptions != options {
             try session.setCategory(category, mode: .default, options: options)
         }

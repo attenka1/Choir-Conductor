@@ -8,6 +8,7 @@ struct ContentView: View {
     @State private var settings = false
     @State private var chords = false
     @State private var recordingPanel = false
+    @State private var tunerPanel = false
     @State private var meterSelection: MeterSelection?
     @AppStorage("appLanguage") private var appLanguage = "fi"
     @State private var customTuningVisible = false
@@ -24,6 +25,10 @@ struct ContentView: View {
                         if !landscape && !compact { Text(T("Kuoroharjoituksen työkalut")).font(.subheadline).foregroundStyle(.secondary) }
                     }
                     Spacer()
+                    Button { tunerPanel = true } label: {
+                        Image(systemName: "tuningfork").font(.title2).frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel(tunerText("Viritysmittari"))
                     RecordingButton(manager: model.recordings) { recordingPanel = true }
                     Button { settings = true } label: { Image(systemName: "gearshape").font(.title2).frame(width: 44, height: 44) }.accessibilityLabel(T("Asetukset"))
                 }
@@ -49,12 +54,15 @@ struct ContentView: View {
         .sheet(isPresented: $editingTempo) { localized(tempoEditor) }
         .sheet(isPresented: $settings) { localized(settingsView) }
         .sheet(isPresented: $chords) { localized(ChordLibraryView(model: model)) }
-        .sheet(isPresented: $recordingPanel) { localized(RecordingView(manager: model.recordings)) }
+        .sheet(isPresented: $tunerPanel) {
+            localized(TunerView(tuner: model.tuner, a4: model.tuning, international: model.international, temperament: model.temperament, root: model.tuningRoot, divisions: model.divisions, playReference: model.playTunerReference, stopReference: model.silencePiano, prepare: model.prepareTuner))
+        }
+        .sheet(isPresented: $recordingPanel) { localized(RecordingView(manager: model.recordings, a4: model.tuning)) }
         .sheet(item: $meterSelection) { localized(MeterSelectionView(model: model, selection: $0)) }
         .environment(\.locale, Locale(identifier: appLanguage))
         .environment(\.layoutDirection, AppLanguage.isRTL(appLanguage) ? .rightToLeft : .leftToRight)
         .alert(T("Toiminto ei onnistunut"), isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) { Button(T("OK")) { model.error = nil } } message: { Text(model.error ?? "") }
-        .onChange(of: scenePhase) { _, phase in if phase == .background { model.stopAll() } }
+        .onChange(of: scenePhase) { _, phase in if phase == .background { model.flushSettings(); model.stopAll() } }
     }
     private func localized<V: View>(_ view: V) -> some View {
         view.id(appLanguage)
@@ -91,7 +99,9 @@ struct ContentView: View {
                 }.environment(\.layoutDirection, .leftToRight)
             }
             if model.isSixEight {
-                Picker(T("6/8-iskut"), selection: $model.compound) { Text("2 × ♩.").tag(true); Text("6 × ♪").tag(false) }.pickerStyle(.segmented)
+                Text(analysisText("Iskutavan vaihto muuntaa BPM-luvun. Alue 30–240 BPM voi rajoittaa muunnosta."))
+                    .font(.caption).foregroundStyle(.secondary)
+                Picker(T("6/8-iskut"), selection: Binding(get: { model.compound }, set: { model.setCompound($0) })) { Text("2 × ♩.").tag(true); Text("6 × ♪").tag(false) }.pickerStyle(.segmented)
             }
             if !includeStart {
                 beatIndicators(compact: compact)
@@ -188,7 +198,7 @@ struct ContentView: View {
                         Text(model.temperament.explanation)
                         Text(model.temperament == .just ? T("A4 säilyy valitussa taajuudessa. Pohjasävel määrää puhtaiden suhteiden lähtösävelen.") : T("A4 säilyy valitussa taajuudessa. C-pohja vastaa historiallisen järjestelmän tavanomaista sijoitusta; muu pohjasävel siirtää koko virityskaavion.")).font(.caption).foregroundStyle(.secondary)
                         if model.temperament.usesOpenChain {
-                            Text(T("Enharmoniset sävelet eroavat. C-pohjalla mustat koskettimet ovat Cis, Es, Fis, Gis ja B. Susikvintti on Gis–Es.")).font(.caption).foregroundStyle(.secondary)
+                            Text(analysisText("Enharmoniset sävelet eroavat. Mustat koskettimet: %@. Susikvintti: %@–%@.", [1, 3, 6, 8, 10].map { model.keyNames[$0] }.joined(separator: ", "), model.keyNames[(model.tuningRoot + 8) % 12], model.keyNames[(model.tuningRoot + 3) % 12])).font(.caption).foregroundStyle(.secondary)
                         }
                     }
                     Picker(T("Tasavireinen asteikko"), selection: $model.divisions) {
@@ -214,15 +224,17 @@ struct ContentView: View {
                     Section {
                         Button(T("Mainosten tietosuoja-asetukset")) {
                             Task { await AdsConsent.shared.showPrivacyOptions() }
-                        }
+                        }.disabled(model.audioBusy)
                     }
                 }
                 Section(T("Tietoa sovelluksesta")) {
+                    Text(analysisText("Asetusten mainokset ja suostumuspalvelu käyttävät verkkoyhteyttä. Mainokset ladataan vain, kun harjoitteluääni, kuuntelu ja äänitys ovat pysähtyneet."))
+                        .font(.caption).foregroundStyle(.secondary)
                     LabeledContent(T("Versio"), value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.1")
                     LabeledContent(T("Build"), value: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "2")
                 }
             }
-            .safeAreaInset(edge: .bottom) { SettingsBanner() }
+            .safeAreaInset(edge: .bottom) { SettingsBanner(audioBusy: model.audioBusy) }
             .navigationTitle(T("Asetukset")).toolbar { ToolbarItem(placement: .confirmationAction) { Button(T("Valmis")) { settings = false } } }
         }
         .alert(T("Oma viritystaso"), isPresented: $customTuningVisible) {

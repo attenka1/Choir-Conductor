@@ -2,6 +2,8 @@ import AVFoundation
 import Foundation
 
 @MainActor final class ChoirAudio {
+    // Audio is stopped explicitly; avoid nested isolated-deinit back-deployment on iOS 18.5.
+    nonisolated deinit {}
     let engine = AVAudioEngine()
     private let session: AudioSessionCoordinator
     let renderer = AudioRenderer()

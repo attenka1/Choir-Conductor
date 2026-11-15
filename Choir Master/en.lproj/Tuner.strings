@@ -1,0 +1,12 @@
+"Viritysmittari" = "Tuner";
+"Aloita kuuntelu" = "Start listening";
+"Lopeta kuuntelu" = "Stop listening";
+"Laula tai soita yksi sävel." = "Sing or play one note.";
+"Viritysmittari kuuntelee yhtä säveltä kerrallaan." = "The tuner listens to one note at a time.";
+"%@ senttiä" = "%@ cents";
+"Lopeta äänitys ennen viritysmittarin käyttöä." = "Stop recording before using the tuner.";
+"Mikrofonin kuuntelu ei onnistunut." = "Could not start microphone input.";
+"Mikrofonin kuuntelu keskeytyi." = "Microphone input was interrupted.";
+"Vertailusävel" = "Reference note";
+"Soita vertailuääni" = "Play reference tone";
+"Käytä kuulokkeita: kaiuttimen vertailuääni voi näkyä mittauksessa oman äänesi sijaan." = "Use headphones: the tuner may detect the speaker’s reference tone instead of your voice.";

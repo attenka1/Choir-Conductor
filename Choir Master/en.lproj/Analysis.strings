@@ -1,0 +1,17 @@
+"Analysoi säveltaso" = "Analyze pitch level";
+"Kuuntelukohta" = "Playback position";
+"Havaintojen kattavuus %@ %% · jaksoja %@" = "Observation coverage %@ %% · segments %@";
+"Analyysi tarvitsee vähintään 15 sekunnin tallenteen." = "Analysis needs a recording of at least 15 seconds.";
+"Tallenteesta ei löytynyt riittävän yhtenäistä säveltasoa." = "No sufficiently consistent tuning level was found.";
+"Vertailu A4 = %@ Hz, tasavireinen asteikko." = "Reference A4 = %@ Hz, equal temperament.";
+"Kokeellinen arvio yhteisestä säveltasosta. Säveltasossa on 100 sentin monitulkintaisuus. Käyrä käyttää 15 sekunnin jaksoja ja kahden sekunnin askelta, ja muutos rajataan 12 senttiin pistettä kohti. Epävarmat kohdat näkyvät aukkoina." = "Experimental estimate of the overall tuning level, with 100-cent ambiguity. The curve uses 15-second blocks and a two-second step, limiting changes to 12 cents per point. Uncertain observations appear as gaps.";
+"Tallenteiden piano- ja metronomiäänten ajankohtia ei ole kirjattu. Kaiuttimesta tallentuneet harjoitteluäänet voivat vaikuttaa tulokseen." = "Piano and metronome intervals have not been logged for these recordings. Practice sounds captured from the speaker may affect the result.";
+"Yritä uudelleen" = "Try again";
+"Analysoidaan säveltasoa…" = "Analyzing pitch level…";
+"Aika (s)" = "Time (s)";
+"Senttiä" = "Cents";
+"Käyrä yhdistää kaikki tallenteen äänet. Se ei erottele stemmoja eikä mittaa luonnonvireisen soinnun puhtautta. 100 sentin taitto ja tasoitus voivat peittää nopean tai suuren muutoksen." = "The curve combines all recorded sounds. It does not separate voice parts or measure the purity of a just-intonation chord. The 100-cent wrapping and smoothing can conceal fast or large changes.";
+"Yhden tallenteen enimmäiskesto on 2 tuntia. Bluetooth-kuulokkeilla käytetään iPhonen mikrofonia, jotta toisto säilyy laadukkaana." = "A recording is limited to 2 hours. With Bluetooth headphones, the iPhone microphone is used to retain high-quality playback.";
+"Iskutavan vaihto muuntaa BPM-luvun. Alue 30–240 BPM voi rajoittaa muunnosta." = "Changing the beat unit converts the BPM value. The 30–240 BPM range may limit the conversion.";
+"Enharmoniset sävelet eroavat. Mustat koskettimet: %@. Susikvintti: %@–%@." = "Enharmonic notes differ. Black keys: %@. Wolf fifth: %@–%@.";
+"Asetusten mainokset ja suostumuspalvelu käyttävät verkkoyhteyttä. Mainokset ladataan vain, kun harjoitteluääni, kuuntelu ja äänitys ovat pysähtyneet." = "Settings ads and the consent service use the network. Ads load only while practice audio, playback and recording are stopped.";

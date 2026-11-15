@@ -1,6 +1,7 @@
 import XCTest
 import AVFoundation
 import UIKit
+import GoogleMobileAds
 @testable import Choir_Master
 
 @MainActor private final class SessionDouble: AudioSessionDriving {
@@ -19,6 +20,100 @@ import UIKit
 }
 
 @MainActor final class ReliabilityTests: XCTestCase {
+    func testRecordingAnalysisDecodesFileAndInvalidatesA4Cache() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let source = directory.appendingPathComponent("tone.wav")
+        let rate = 22050
+        let format = AVAudioFormat(standardFormatWithSampleRate: Double(rate), channels: 1)!
+        do {
+            let file = try AVAudioFile(forWriting: source, settings: format.settings)
+            let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(rate * 18))!
+            buffer.frameLength = buffer.frameCapacity
+            for index in 0..<Int(buffer.frameLength) {
+                buffer.floatChannelData![0][index] = Float(0.2 * sin(2 * .pi * 440 * Double(index) / Double(rate)))
+            }
+            try file.write(from: buffer)
+        }
+        let store = RecordingAnalysisStore(source: source)
+        let first = try store.resolve(a4: 440) { _ in }
+        XCTAssertEqual(first.total, 2)
+        XCTAssertEqual(first.valid, 2)
+        XCTAssertTrue(first.points.compactMap(\.cents).allSatisfy { abs($0) < 1 })
+        let reopened = try store.resolve(a4: 440) { _ in }
+        XCTAssertEqual(first.points, reopened.points)
+        let shifted = try store.resolve(a4: 442) { _ in }
+        XCTAssertTrue(shifted.points.compactMap(\.cents).allSatisfy { abs($0 + 7.85) < 1 })
+        XCTAssertEqual(shifted.config.a4, 442)
+    }
+
+    func testTunerSharesOnlyReferenceOutputAndRestoresPlaybackCategory() throws {
+        let driver = SessionDouble()
+        let session = AudioSessionCoordinator(driver: driver)
+        try session.begin(.recording)
+        XCTAssertThrowsError(try session.begin(.tuner))
+        session.end(.recording)
+        try session.begin(.tuner)
+        XCTAssertEqual(driver.category, .playAndRecord)
+        XCTAssertThrowsError(try session.begin(.recording))
+        try session.begin(.sound)
+        XCTAssertEqual(session.clients, [.tuner, .sound])
+        XCTAssertFalse(driver.categoryOptions.contains(.allowBluetoothHFP))
+        XCTAssertTrue(driver.categoryOptions.contains(.allowBluetoothA2DP))
+        session.end(.sound)
+        XCTAssertThrowsError(try session.begin(.playback))
+        session.end(.tuner)
+        XCTAssertEqual(driver.category, .playback)
+        XCTAssertTrue(session.clients.isEmpty)
+        try session.begin(.sound)
+        XCTAssertEqual(session.clients, [.sound])
+    }
+
+    func testTunerTargetsAllTemperamentsAndQuarterTones() {
+        for temperament in Temperament.allCases {
+            for root in 0..<12 {
+                for note in 36...84 {
+                    let frequency = temperament.frequency(note: Double(note), a4: 442, root: root)
+                    let target = TunerPitch(hz: frequency).target(a4: 442, temperament: temperament, root: root, divisions: 12)
+                    XCTAssertEqual(target.note, Double(note))
+                    XCTAssertEqual(target.cents, 0, accuracy: 0.000001)
+                }
+            }
+        }
+        let quarter = TunerPitch(hz: 442 * pow(2, 0.5 / 12)).target(a4: 442, temperament: .equal, root: 0, divisions: 24)
+        XCTAssertEqual(quarter.note, 69.5)
+        XCTAssertEqual(quarter.cents, 0, accuracy: 0.000001)
+    }
+
+    func testCompoundConversionAndHeldChordKeepScreenAwake() {
+        let domain = Bundle.main.bundleIdentifier!
+        let previous = UserDefaults.standard.persistentDomain(forName: domain) ?? [:]
+        let model = ConductorModel()
+        defer {
+            model.stopAll()
+            UserDefaults.standard.setPersistentDomain(previous, forName: domain)
+        }
+        model.meter = 6; model.denominator = 8
+        if !model.compound { model.setCompound(true) }
+        model.setTempo(60)
+        model.setCompound(false)
+        XCTAssertEqual(model.tempo, 180)
+        model.setCompound(true)
+        XCTAssertEqual(model.tempo, 60)
+        let chord = SavedChord(name: "Held", notes: [60, 64, 67], tuning: 442, temperament: .equal, root: 0, divisions: 12)
+        XCTAssertTrue(model.playChord(chord))
+        XCTAssertTrue(UIApplication.shared.isIdleTimerDisabled)
+        model.silencePiano()
+        XCTAssertFalse(UIApplication.shared.isIdleTimerDisabled)
+    }
+
+    func testAdsCannotManageSessionOrPlayAudio() {
+        AdsConsent.configureAudioPolicy()
+        XCTAssertTrue(MobileAds.shared.audioVideoManager.isAudioSessionApplicationManaged)
+        XCTAssertTrue(MobileAds.shared.isApplicationMuted)
+    }
+
     func testRecordingRestoresPlaybackWithoutRepeatedActivation() throws {
         let driver = SessionDouble()
         let session = AudioSessionCoordinator(driver: driver)
@@ -68,6 +163,7 @@ import UIKit
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: directory) }
         let manager = RecordingManager(session: AudioSessionCoordinator(driver: SessionDouble()), directory: directory)
+        while manager.loading { try await Task.sleep(for: .milliseconds(10)) }
         let oldRecorder = try AVAudioRecorder(url: directory.appendingPathComponent("old.m4a"), settings: [AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: 44100, AVNumberOfChannelsKey: 1])
         manager.audioRecorderEncodeErrorDidOccur(oldRecorder, error: CocoaError(.fileWriteUnknown))
         try await Task.sleep(nanoseconds: 30_000_000)

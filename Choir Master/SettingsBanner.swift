@@ -15,11 +15,16 @@ final class AdsConsent {
         requestedConsent = true
         do {
             try await ConsentInformation.shared.requestConsentInfoUpdate(with: RequestParameters())
+            try Task.checkCancellation()
             try await ConsentForm.loadAndPresentIfRequired(from: nil)
+        } catch is CancellationError {
+            requestedConsent = false
+            return
         } catch {
             // UMP can still permit ads using consent from the previous session.
             print("Ad consent: \(error.localizedDescription)")
         }
+        guard !Task.isCancelled else { requestedConsent = false; return }
         await updateStatus()
     }
 
@@ -33,6 +38,12 @@ final class AdsConsent {
         await updateStatus()
     }
 
+    static func configureAudioPolicy() {
+        // The installed SDK exposes these controls; it must not override our session.
+        MobileAds.shared.audioVideoManager.isAudioSessionApplicationManaged = true
+        MobileAds.shared.isApplicationMuted = true
+    }
+
     private func updateStatus() async {
         privacyOptionsRequired = ConsentInformation.shared.privacyOptionsRequirementStatus == .required
         guard ConsentInformation.shared.canRequestAds else {
@@ -41,6 +52,7 @@ final class AdsConsent {
         }
         if !startedSDK {
             startedSDK = true
+            Self.configureAudioPolicy()
             await MobileAds.shared.start()
         }
         canRequestAds = ConsentInformation.shared.canRequestAds
@@ -48,9 +60,10 @@ final class AdsConsent {
 }
 
 struct SettingsBanner: View {
+    let audioBusy: Bool
     var body: some View {
         Group {
-            if AdsConsent.shared.canRequestAds {
+            if !audioBusy && AdsConsent.shared.canRequestAds {
                 BannerContainer()
                     .frame(width: 320, height: 50)
                     .frame(maxWidth: .infinity)
@@ -58,7 +71,9 @@ struct SettingsBanner: View {
                     .background(.bar)
             }
         }
-        .task { await AdsConsent.shared.prepare() }
+        .task(id: audioBusy) {
+            if !audioBusy { await AdsConsent.shared.prepare() }
+        }
     }
 }
 

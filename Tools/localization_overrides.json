@@ -1,0 +1,238 @@
+{
+  "en": {
+    "Pito": "Hold",
+    "Luonnonvire": "Just intonation",
+    "Tasavireinen": "Equal temperament",
+    "¼-komman keskisävel": "Quarter-comma meantone",
+    "Viritys": "Tuning",
+    "Äänenvoimakkuudet": "Volume"
+  },
+  "zh-Hans": {
+    "Metronomi": "节拍器",
+    "Äänenanto": "参考音",
+    "Pito": "保持",
+    "Viritys": "调律",
+    "Äänenvoimakkuudet": "音量",
+    "Pohjasävel": "主音",
+    "Sävelnimet": "音名",
+    "Luonnonvire": "纯律",
+    "Tasavireinen": "平均律",
+    "Pythagoralainen": "毕达哥拉斯律",
+    "¼-komman keskisävel": "四分之一音差中全音律",
+    "Oma viritystaso": "自定义标准音高",
+    "Syötä oma viritystaso": "输入自定义标准音高",
+    "Koskettimen vasen puoli soittaa nimetyn sävelen. Oikea, ↑-merkitty puoli soi 50 senttiä korkeammalta. Molemmat puolikkaat ovat erillisiä koskettimia.": "每个琴键的左半边演奏标注的音。右半边标有 ↑，音高提高 50 音分。两半是独立的琴键。",
+    "Puhtaat duuriterssit ja kavennetut kvintit. Sopii renessanssiin ja varhaiseen barokkiin. Kvinttiketjun päiden välissä on susikvintti.": "采用纯大三度和略缩窄的五度，适合文艺复兴与早期巴洛克音乐。五度链的两端之间形成狼五度。",
+    "Puhtaat kvintit. Korostaa melodisia intervalleja; duuriterssit ovat luonnonvirettä korkeampia. Kvinttiketjun päiden välissä on susikvintti.": "采用纯五度，突出旋律音程；大三度比纯律的大三度更高。五度链的两端之间形成狼五度。",
+    "Tasaiset sävelvälit. Sopii yleiskäyttöön ja 24 sävelen asteikkoon.": "音程等分，适合日常使用和每个八度含 24 个音的音阶。",
+    "Puhtaat suhteet valitusta pohjasävelestä: duuriterssi 5:4, molliterssi 6:5 ja kvintti 3:2. Sopii kuoron sointuharjoitteluun. Viritys on kiinteä: vaihda pohjasäveltä harmonian mukaan. Kaikki muiden pohjasävelten soinnut eivät ole puhtaita.": "以所选主音为基准采用纯频率比：大三度 5:4、小三度 6:5、五度 3:2，适合合唱和弦练习。这是固定音律，应随和声改变主音。其他主音上的和弦不一定都是纯和弦。",
+    "Neljä kvinttiä on kavennettu ¼ pythagoralaisella kommalla. Historiallinen kiertävä viritys: sävellajeilla on erilainen väri.": "四个五度各缩窄四分之一个毕达哥拉斯音差。这种历史上的循环音律使不同调性具有不同色彩。",
+    "Neljä kvinttiä on kavennettu ¼ syntonisella kommalla; yksi kvintti korjaa skisman. C-pohjalla C–E-terssi on puhdas.": "四个五度各缩窄四分之一个普通音差；另一个五度补偿微音差（schisma）。以 C 为主音时，C–E 为纯大三度。",
+    "Kuusi kvinttiä on kavennettu ⅙ pythagoralaisella kommalla. Kiertävä viritys myöhäisbarokin ja klassisen ohjelmiston harjoitteluun.": "六个五度各缩窄六分之一个毕达哥拉斯音差。这种循环音律适合练习晚期巴洛克与古典音乐。",
+    "24 sävelen asteikko käyttää tasavireistä viritystä. Sen valitseminen vaihtaa viritysjärjestelmän tasavireiseksi; muun viritysjärjestelmän valitseminen palauttaa 12 kosketinta oktaaviin.": "24 音音阶采用平均律。选择此音阶会切换为平均律；选择其他音律会恢复为每个八度 12 个琴键。",
+    "Napauta kosketinta: sävel jää soimaan. Seuraava kosketin vaihtaa sävelen. Hiljennä kaikki lopettaa äänen.": "轻触琴键，音符将持续发声。轻触另一个琴键可更换音符。“全部静音”停止发声。",
+    "Hiljennä kaikki": "全部静音",
+    "Oma arvo…": "自定义…"
+  },
+  "yue": {
+    "Äänenanto": "參考音",
+    "Pito": "保持",
+    "Viritys": "調律",
+    "Äänenvoimakkuudet": "音量",
+    "Pohjasävel": "主音",
+    "Sävelnimet": "音名",
+    "Luonnonvire": "純律",
+    "Tasavireinen": "平均律",
+    "Pythagoralainen": "畢達哥拉斯律",
+    "¼-komman keskisävel": "四分之一音差中全音律",
+    "Oma viritystaso": "自訂標準音高",
+    "Syötä oma viritystaso": "輸入自訂標準音高",
+    "Hiljennä kaikki": "全部靜音",
+    "Koskettimen vasen puoli soittaa nimetyn sävelen. Oikea, ↑-merkitty puoli soi 50 senttiä korkeammalta. Molemmat puolikkaat ovat erillisiä koskettimia.": "每個琴鍵嘅左半邊會彈出標示嘅音。右半邊標有 ↑，音高會高 50 音分。兩半係獨立嘅琴鍵。",
+    "Napauta kosketinta: sävel jää soimaan. Seuraava kosketin vaihtaa sävelen. Hiljennä kaikki lopettaa äänen.": "撳一下琴鍵，個音會繼續響。撳另一個琴鍵就會換音。撳「全部靜音」就會停止發聲。"
+  },
+  "ja": {
+    "Pito": "保持",
+    "Viritys": "調律",
+    "Luonnonvire": "純正律",
+    "Tasavireinen": "平均律",
+    "Pythagoralainen": "ピタゴラス音律",
+    "¼-komman keskisävel": "1/4コンマ中全音律",
+    "Äänenvoimakkuudet": "音量",
+    "Pohjasävel": "基音",
+    "Sävelnimet": "音名",
+    "Oma viritystaso": "基準周波数の指定",
+    "Syötä oma viritystaso": "基準周波数を入力",
+    "Puhtaat duuriterssit ja kavennetut kvintit. Sopii renessanssiin ja varhaiseen barokkiin. Kvinttiketjun päiden välissä on susikvintti.": "純正な長3度と狭めた5度を使います。ルネサンスや初期バロック音楽に適しています。5度の連鎖の両端にウルフの5度が生じます。",
+    "Puhtaat kvintit. Korostaa melodisia intervalleja; duuriterssit ovat luonnonvirettä korkeampia. Kvinttiketjun päiden välissä on susikvintti.": "純正な5度を使い、旋律の音程を重視します。長3度は純正律より高くなります。5度の連鎖の両端にウルフの5度が生じます。"
+  },
+  "de": {
+    "Pito": "Halten",
+    "Viritys": "Stimmung",
+    "Luonnonvire": "Reine Stimmung",
+    "Tasavireinen": "Gleichstufig",
+    "Pythagoralainen": "Pythagoreisch",
+    "¼-komman keskisävel": "¼-Komma-mitteltönig",
+    "Äänenvoimakkuudet": "Lautstärke",
+    "Syötä oma viritystaso": "Eigenen Kammerton eingeben",
+    "Oma viritystaso": "Eigener Kammerton"
+  },
+  "fr": {
+    "Pito": "Maintien",
+    "Viritys": "Accordage",
+    "Luonnonvire": "Intonation juste",
+    "Tasavireinen": "Tempérament égal",
+    "¼-komman keskisävel": "Mésotonique au quart de comma",
+    "Äänenvoimakkuudet": "Volume",
+    "Äänenanto": "Note de référence",
+    "Pohjasävel": "Fondamentale",
+    "Versio": "Version"
+  },
+  "es": {
+    "Pito": "Mantener",
+    "Viritys": "Afinación",
+    "Luonnonvire": "Afinación justa",
+    "Tasavireinen": "Temperamento igual",
+    "¼-komman keskisävel": "Mesotónico de cuarto de coma",
+    "Äänenvoimakkuudet": "Volumen",
+    "Pohjasävel": "Nota fundamental",
+    "Oma viritystaso": "Frecuencia de afinación"
+  },
+  "pt": {
+    "Pito": "Sustentar",
+    "Viritys": "Afinação",
+    "Luonnonvire": "Entonação justa",
+    "Tasavireinen": "Temperamento igual",
+    "¼-komman keskisävel": "Mesotônico de quarto de coma",
+    "Äänenvoimakkuudet": "Volume",
+    "Pohjasävel": "Nota fundamental"
+  },
+  "ru": {
+    "Pito": "Держать",
+    "Viritys": "Настройка",
+    "Luonnonvire": "Чистый строй",
+    "Tasavireinen": "Равномерная темперация",
+    "¼-komman keskisävel": "Среднетоновый строй ¼ коммы",
+    "Äänenvoimakkuudet": "Громкость",
+    "Pohjasävel": "Основной тон",
+    "Sävelnimet": "Названия нот"
+  },
+  "ar": {
+    "Pito": "إبقاء",
+    "Luonnonvire": "الضبط النقي",
+    "Tasavireinen": "التسوية المتساوية",
+    "¼-komman keskisävel": "ضبط النغمة الوسطى بربع كوما",
+    "Äänenvoimakkuudet": "مستوى الصوت",
+    "Pohjasävel": "النغمة الأساسية",
+    "Sävelnimet": "أسماء النغمات",
+    "Syötä oma viritystaso": "أدخل تردد ضبط مخصص",
+    "Metronomi": "ضابط الإيقاع",
+    "Soinnut": "التآلفات",
+    "Tahtilaji": "الميزان الموسيقي",
+    "Nimittäjä": "المقام",
+    "Hiljennä kaikki": "إسكات النغمات",
+    "Aloitussoinnut": "تآلفات البداية",
+    "Soinnun nimi": "اسم التآلف",
+    "Tasavireinen asteikko": "سلم متساوي التسوية"
+  },
+  "hi": {
+    "Pito": "बनाए रखें",
+    "Luonnonvire": "शुद्ध स्वर प्रणाली",
+    "Tasavireinen": "समान स्वर प्रणाली",
+    "¼-komman keskisävel": "¼-कॉमा मीनटोन",
+    "Äänenvoimakkuudet": "ध्वनि स्तर"
+  },
+  "bn": {
+    "Pito": "ধরে রাখুন",
+    "Luonnonvire": "বিশুদ্ধ স্বরবিন্যাস",
+    "¼-komman keskisävel": "¼-কমা মিনটোন",
+    "Äänenvoimakkuudet": "শব্দের মাত্রা"
+  },
+  "ur": {
+    "Pito": "جاری رکھیں",
+    "Luonnonvire": "خالص سُروں کی ترتیب",
+    "¼-komman keskisävel": "¼-کوما مین ٹون",
+    "Äänenvoimakkuudet": "آواز کی سطح"
+  },
+  "id": {
+    "Pito": "Tahan",
+    "Luonnonvire": "Intonasi murni",
+    "¼-komman keskisävel": "Meantone seperempat koma",
+    "Äänenvoimakkuudet": "Volume"
+  },
+  "mr": {
+    "Pito": "धरून ठेवा",
+    "Luonnonvire": "शुद्ध स्वर प्रणाली",
+    "¼-komman keskisävel": "¼-कॉमा मीनटोन"
+  },
+  "vi": {
+    "Pito": "Giữ",
+    "Luonnonvire": "Âm luật thuần",
+    "¼-komman keskisävel": "Meantone ¼ comma",
+    "Äänenvoimakkuudet": "Âm lượng"
+  },
+  "te": {
+    "Pito": "కొనసాగించు",
+    "Luonnonvire": "శుద్ధ స్వర విధానం",
+    "¼-komman keskisävel": "¼-కామా మీన్‌టోన్"
+  },
+  "sw": {
+    "Pito": "Shikilia",
+    "Luonnonvire": "Urekebishaji safi wa sauti",
+    "¼-komman keskisävel": "Meantone ya robo-koma",
+    "Äänenvoimakkuudet": "Kiwango cha sauti"
+  },
+  "ha": {
+    "Pito": "Riƙe",
+    "Luonnonvire": "Tsabtataccen daidaita sautin kiɗa",
+    "¼-komman keskisävel": "Meantone (¼ comma)",
+    "Äänenanto": "Sautin misali",
+    "Viritys": "Daidaita sautin kiɗa"
+  },
+  "tr": {
+    "Pito": "Tut",
+    "Luonnonvire": "Saf akort",
+    "¼-komman keskisävel": "Çeyrek koma orta ton",
+    "Äänenvoimakkuudet": "Ses düzeyi"
+  },
+  "pa-Arab": {
+    "Pito": "جاری رکھو",
+    "Luonnonvire": "خالص سُراں دی ترتیب",
+    "¼-komman keskisävel": "¼-کوما مین ٹون"
+  },
+  "tl": {
+    "Pito": "Panatilihin",
+    "Luonnonvire": "Purong intonasyon",
+    "¼-komman keskisävel": "Meantone na ¼ comma"
+  },
+  "ta": {
+    "Pito": "நீடிக்கவும்",
+    "Luonnonvire": "தூய சுர அமைப்பு",
+    "¼-komman keskisävel": "¼-காமா மீன்டோன்"
+  },
+  "fa": {
+    "Pito": "نگه‌دار",
+    "Luonnonvire": "کوک خالص",
+    "¼-komman keskisävel": "میان‌پردهٔ یک‌چهارم کما",
+    "Äänenvoimakkuudet": "بلندی صدا"
+  },
+  "ko": {
+    "Pito": "유지",
+    "Luonnonvire": "순정률",
+    "Tasavireinen": "평균율",
+    "¼-komman keskisävel": "¼콤마 중전음률",
+    "Äänenvoimakkuudet": "음량",
+    "Pohjasävel": "근음"
+  },
+  "am": {
+    "Pito": "አቆይ",
+    "Luonnonvire": "ንጹህ የሙዚቃ ቅኝት",
+    "¼-komman keskisävel": "Meantone (¼ comma)"
+  },
+  "th": {
+    "Pito": "ค้างเสียง",
+    "Luonnonvire": "ระบบเสียงบริสุทธิ์",
+    "¼-komman keskisävel": "มีนโทนหนึ่งในสี่คอมมา",
+    "Äänenvoimakkuudet": "ระดับเสียง"
+  }
+}

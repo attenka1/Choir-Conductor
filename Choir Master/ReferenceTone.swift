@@ -7,6 +7,8 @@ enum ReferenceSound: String, CaseIterable {
 
 /// Reference playback shares the existing engine; its gain envelope is independent of the metronome.
 @MainActor final class ReferenceTone {
+    // Audio is stopped explicitly; avoid nested isolated-deinit back-deployment on iOS 18.5.
+    nonisolated deinit {}
     private(set) var soundFontAvailable = false
     private let sampler = AVAudioUnitSampler()
     private let mixer = AVAudioMixerNode()

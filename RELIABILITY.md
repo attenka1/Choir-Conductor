@@ -44,3 +44,82 @@ requirements and architecture are in `SPEC.md` and `ARCHITECTURE.md`;
 The older statement about no external runtime dependencies does not cover
 the subsequently added Google Mobile Ads / UMP integration. No iOS runtime
 source was changed for this Android preparation.
+
+## Katselmuskorjaukset 15.11.2026
+
+- Viritysmittari etsii lähimmän sävelen valitun viritysjärjestelmän, pohjasävelen,
+  A4:n ja 12/24-jaon todellisista tavoitetaajuuksista. Nimistö vastaa koskettimistoa.
+  24-jaossa asteikon näyttö on ±25 senttiä. Mittarissa voi kytkeä erikseen
+  valittavan vertailuäänen; kuulokeohje kertoo kaiutinäänen vaikutuksesta mittaukseen.
+- Mikrofonin tap kopioi vain rajattuun puskuriin odottamatta lukkoa. Suodatus ja
+  YIN toimivat sarjallisessa taustotyössä. Windowed-sinc-alipäästö ehkäisee
+  laskostumista ennen harvennusta. Ylikuormassa vanha aineisto pudotetaan ja
+  analyysi alustetaan uudelleen; työjono ei kasva rajattomasti.
+- Tallenneanalyysin v2 aloittaa pitkän tauon jälkeisen jakson omasta havainnosta.
+  Vanha 12 sentin jatkuvuusrajoitus ei sido sitä edelliseen jaksoon. Versionvaihto
+  mitätöi aiemmat välimuistit. Päällekkäisten analyysipyyntöjen valmistuminen ei
+  ylikirjoita uudemman pyynnön tilaa.
+- Analyysin ohje kertoo erikseen kaikkien äänten yhdistymisestä, stemmojen erottelun
+  puuttumisesta sekä 100 sentin taiton ja tasoituksen vaikutuksesta. Menetelmä on
+  edelleen yhteisen säveltason kokeellinen arvio, eikä luonnonvireisen soinnun
+  puhtauden mittari. Stemmojen erottelua ei lisätty.
+- Äänitys ja viritin sallivat Bluetooth A2DP -toiston ilman HFP-puheluprofiilia.
+  Bluetooth-kuulokkeen mikrofonia ei käytetä; sisäinen tai langallinen mikrofoni
+  toimii tulona. Viritin voi jakaa session vertailuäänen kanssa, mutta ei
+  mikrofonitallennuksen tai tallenteen kuuntelun kanssa.
+- Myös pianon pidetty sointu pitää näytön hereillä. Soiton käynnistysvirhe pysäyttää
+  vain harjoitteluäänen ja jättää äänityksen toimimaan. Manuaalinen lukitus ja
+  taustalle siirtyminen pysäyttävät toiminnan edelleen.
+- Mainoksia ja suostumuksen valmistelua lykätään session vapautumiseen asti.
+  Mainos-SDK on mykistetty, eikä se saa hallita AVAudioSessionia. Käyttöliittymä ja
+  README kertovat verkkoyhteydestä. Mainoksia ei poistettu sovelluksesta.
+- Äänenvoimakkuuksien tallennus odottaa 300 ms muutosten tasaantumista ja tehdään
+  heti taustalle siirryttäessä. Käännösformaatit ja kielipaketit välimuistitetaan.
+  Mainosten tietosuoja-avain lisättiin käännösten lähdeaineistoon; uusien
+  suomi/englanti-taulujen avaimet ja muotoilupaikat tarkistetaan testeissä.
+- Tallenneluettelon luku ja tiedostojen palautus tehdään taustalla. Äänitys on
+  estetty latauksen ajan. Tunnettujen tiedostojen tarkistus käyttää joukkoa.
+  Yhden tallenteen enimmäiskesto on kaksi tuntia, minkä jälkeen tiedosto viimeistellään.
+- Renderöinti käy näytekohtaisesti läpi vain aktiiviset ja vaimenevat äänet;
+  lähdenäytteiden indeksit on esilaskettu. Pianonäytteiden ja SoundFontin alkuperäinen
+  esilataus on edelleen synkroninen. Nopeutuksen määrää ei ole profiloitu laitteella.
+- 6/8-iskutavan vaihto muuntaa BPM:n kolminkertaiseksi tai kolmasosaan, jotta
+  tahdin kesto säilyy mahdollisuuksien mukaan. 30–240 BPM -raja ja kokonaisluvuksi
+  pyöristys voivat rajoittaa muunnosta; käyttöliittymä kertoo rajoituksesta.
+  Historiallisten viritysten kosketin- ja susikvinttiohje käyttää nykyisiä sävelnimiä.
+- Uusi mallin elinkaaritesti paljasti iOS 18.5:n Swift isolated-deinit
+  -yhteensopivuuspolun kaatumisen sisäkkäisissä ääniolioissa. Eksplisiittiset
+  nonisolated-deinitit välttävät saman polun kuin AudioSessionCoordinatorissa.
+
+Tarkistukset: Xcoden testiajo iPhone 16 Pro / iOS 18.5 -simulaattorissa läpäisi
+kaikki 17 XCTest-testiä. Erilliset virittimen, renderöinnin, tallenneanalyysin,
+viritysjärjestelmien ja tallennemetadatan testit läpäisivät. Virittimen testit
+kattavat kaikki viritysjärjestelmät ja pohjasävelet, neljäsosasävelen sekä
+korkean taajuuden häiriön suodatuksen 44,1/48/96 kHz:n syötteillä. Käännöstarkistus
+läpäisi 31 kieltä sekä suomen/englannin lisätaulut. Paikallisella Android-verrokkijarilla
+ajettu 65 pisteen vertailu läpäisi: ero oli alle 0,000001 senttiä ennen jakson
+uudelleenalustusta; tauon jälkeinen uusi iOS-tulos tarkistettiin testiaineiston
+48 sentin tasoa vasten. Androidin lähdekoodia ei muutettu.
+
+Fyysisellä iPhonella on vielä tarkistettava Bluetooth-reititys, samanaikainen
+vertailuääni ja mikrofonimittaus, mainosten elinkaari, kahden tunnin tallennusraja
+sekä virittimen kuorma ja viive. Käyttöliittymän uutta asettelua ei tarkistettu
+visuaalisesti. Todellisen kuoron analyysitarkkuutta ei ole validoitu.
+
+## Julkaisuehdokkaan tarkistus 16.11.2026
+
+Version 1.0.1 (build 2) iPhone/arm64 Release -arkistointi läpäisi ilman
+allekirjoitusta. Tämä varmistaa Release-käännöksen ja arkiston muodostamisen,
+ei jakeluvarmennetta, provisioning-profiilia tai App Store Connectin validointia.
+17 XCTest-testiä läpäisi edellisessä simulaattoriajossa. App Store Connectin
+nykyistä build-numeroa ei ole tarkistettu. Ennen uutta lähetystä build-numeron
+on oltava palvelussa käyttämätön.
+
+Tests-, Tools- ja README-aineistot on kopioitu aiemmasta Git-repon ulkopuolisesta
+työtilajuuresta tähän repoon. Kopioiden polut on sovitettu repon juureen;
+alkuperäiset työtilan tiedostot on säilytetty. Lokalisaatiotarkistus läpäisi myös
+repon sisältä ajettuna. Tag v1.0.1-rc.1 merkitsee julkaisuehdokasta.
+
+Suositus: seuraavaksi allekirjoitettu arkisto ja TestFlight fyysiselle iPhonelle.
+Julkista App Store -julkaisua ennen tarvitaan edellä luetellut mikrofonin,
+Bluetoothin, vertailuäänen, mainosten ja käyttöliittymän laitetarkistukset.

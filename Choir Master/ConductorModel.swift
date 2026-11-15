@@ -8,11 +8,15 @@ enum SoundMode: String, CaseIterable {
 }
 
 @MainActor final class ConductorModel: ObservableObject {
+    // Audio is stopped explicitly; avoid nested isolated-deinit back-deployment on iOS 18.5.
+    nonisolated deinit {}
     let recordings: RecordingManager
+    let tuner: LiveTuner
     private let session: AudioSessionCoordinator
     private var beatUpdates: AnyCancellable?
     private var idleStop: Task<Void, Never>?
     private var applyingProfile = false
+    private var pendingSettingsSave: Task<Void, Never>?
     private struct PitchProfile: Equatable { let tuning: Double; let temperament: Temperament; let root: Int }
     private var appliedPitch: PitchProfile?
     @Published var tempo: Int { didSet { guard !applyingProfile else { return }; save(); configure() } }
@@ -20,8 +24,8 @@ enum SoundMode: String, CaseIterable {
     @Published var denominator: Int { didSet { guard !applyingProfile else { return }; save(); resetMeter() } }
     @Published var compound: Bool { didSet { guard !applyingProfile else { return }; save(); resetMeter() } }
     @Published var tuning: Double { didSet { guard !applyingProfile else { return }; save(); configure() } }
-    @Published var pianoVolume: Double { didSet { guard !applyingProfile else { return }; save(); configure() } }
-    @Published var clickVolume: Double { didSet { guard !applyingProfile else { return }; save(); configure() } }
+    @Published var pianoVolume: Double { didSet { guard !applyingProfile else { return }; scheduleSettingsSave(); configure() } }
+    @Published var clickVolume: Double { didSet { guard !applyingProfile else { return }; scheduleSettingsSave(); configure() } }
     @Published var international: Bool { didSet { guard !applyingProfile else { return }; save() } }
     @Published var divisions: Int { didSet { guard !applyingProfile else { return };
         silencePiano()
@@ -66,6 +70,7 @@ enum SoundMode: String, CaseIterable {
         let coordinator = AudioSessionCoordinator()
         session = coordinator
         recordings = RecordingManager(session: coordinator)
+        tuner = LiveTuner(session: coordinator)
         let d = UserDefaults.standard
         referenceSound = ReferenceSound(rawValue: d.string(forKey: "referenceSound") ?? "precise") ?? .precise
         tempo = min(240, max(30, d.object(forKey: "tempo") as? Int ?? 80))
@@ -85,7 +90,16 @@ enum SoundMode: String, CaseIterable {
         international = d.bool(forKey: "international")
         do { audio = try ChoirAudio(session: coordinator); configure() } catch { self.error = error.localizedDescription }
         do { savedChords = try ChordStore.load(from: d) } catch { self.error = T("Tallennettuja sointuja ei voitu lukea: ") + error.localizedDescription }
-        coordinator.onChange = { [weak self] in self?.refreshIdleTimer() }
+        recordings.$requestingPermission.removeDuplicates().sink { [weak self] _ in
+            Task { @MainActor in self?.objectWillChange.send() }
+        }.store(in: &subscriptions)
+        tuner.$active.removeDuplicates().sink { [weak self] _ in
+            Task { @MainActor in self?.objectWillChange.send() }
+        }.store(in: &subscriptions)
+        coordinator.onChange = { [weak self] in
+            self?.refreshIdleTimer()
+            self?.objectWillChange.send()
+        }
         coordinator.onError = { [weak self] in self?.error = $0.localizedDescription }
         recordings.prepareSession = { [weak self] in self?.stopSound() }
         NotificationCenter.default.publisher(for: AVAudioSession.interruptionNotification).sink { [weak self] notification in
@@ -107,7 +121,17 @@ enum SoundMode: String, CaseIterable {
             Task { @MainActor in self?.recoverAudioConfiguration() }
         }.store(in: &subscriptions)
     }
+    private func scheduleSettingsSave() {
+        pendingSettingsSave?.cancel()
+        pendingSettingsSave = Task { @MainActor [weak self] in
+            do { try await Task.sleep(for: .milliseconds(300)) } catch { return }
+            self?.save()
+        }
+    }
+    func flushSettings() { save() }
     private func save() {
+        pendingSettingsSave?.cancel()
+        pendingSettingsSave = nil
         let d = UserDefaults.standard
         d.set(tempo, forKey: "tempo"); d.set(meter, forKey: "meter"); d.set(denominator, forKey: "denominator"); d.set(compound, forKey: "compound")
         d.set(referenceSound.rawValue, forKey: "referenceSound")
@@ -146,7 +170,7 @@ enum SoundMode: String, CaseIterable {
     private func ensureAudio() -> Bool {
         idleStop?.cancel(); idleStop = nil
         guard let audio else { return false }
-        do { try audio.start(); return true } catch { self.error = error.localizedDescription; stopAll(); return false }
+        do { try audio.start(); return true } catch { self.error = error.localizedDescription; stopSound(); return false }
     }
     func toggleMetronome() {
         if !running && !ensureAudio() { return }
@@ -167,6 +191,7 @@ enum SoundMode: String, CaseIterable {
         if sustain && sounding.contains(note) { release(note); return }
         sounding.insert(note)
         audio?.renderer.startNotes([note])
+        refreshIdleTimer()
     }
     func noteUp(_ note: Double) { if soundMode == .reference { return }; pressed.remove(note); if !sustain { release(note) } }
     func noteCancelled(_ note: Double) {
@@ -223,6 +248,7 @@ enum SoundMode: String, CaseIterable {
         // Start every voice in the same audio-buffer boundary, without per-key engine starts.
         audio?.renderer.startNotes(chord.notes)
         octave = min(4, max(2, Int(chord.notes.min()! / 12) - 1))
+        refreshIdleTimer()
         return true
     }
     private func updateBeatTracking() {
@@ -235,7 +261,7 @@ enum SoundMode: String, CaseIterable {
         }
     }
     private func refreshIdleTimer() {
-        UIApplication.shared.isIdleTimerDisabled = running || session.clients.contains(.recording) || (soundMode == .reference && !sounding.isEmpty)
+        UIApplication.shared.isIdleTimerDisabled = running || session.clients.contains(.recording) || session.clients.contains(.tuner) || !sounding.isEmpty
     }
     private func scheduleIdleStop() {
         guard !running, sounding.isEmpty else { return }
@@ -251,5 +277,33 @@ enum SoundMode: String, CaseIterable {
         running = false; beat = -1; pressed.removeAll(); sounding.removeAll()
         audio?.silence(); updateBeatTracking(); refreshIdleTimer()
     }
-    func stopAll() { recordings.stopAll(); stopSound() }
+    func prepareTuner() -> Bool {
+        guard !recordings.recording, !recordings.requestingPermission else { return false }
+        recordings.stopPlayback()
+        stopSound()
+        return true
+    }
+    var audioBusy: Bool {
+        !session.clients.isEmpty || running || !sounding.isEmpty ||
+            recordings.requestingPermission || tuner.active
+    }
+    func playTunerReference(_ note: Double) {
+        guard tuner.active else { return }
+        soundMode = .reference
+        noteDown(note)
+    }
+    func setCompound(_ value: Bool) {
+        guard value != compound else { return }
+        // Preserve bar duration while changing the beat unit; the supported BPM range still applies.
+        applyingProfile = true
+        tempo = min(240, max(30, value ? Int((Double(tempo) / 3).rounded()) : tempo * 3))
+        compound = value
+        applyingProfile = false
+        save(); resetMeter()
+    }
+    func stopAll() {
+        tuner.stop()
+        recordings.stopAll()
+        stopSound()
+    }
 }

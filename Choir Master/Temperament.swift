@@ -1,6 +1,6 @@
 import Foundation
 
-enum Temperament: String, CaseIterable, Codable {
+nonisolated enum Temperament: String, CaseIterable, Codable, Sendable {
     case equal, just, pythagorean, quarterComma, werckmeisterIII, kirnbergerIII, vallotti
     var title: String {
         switch self {

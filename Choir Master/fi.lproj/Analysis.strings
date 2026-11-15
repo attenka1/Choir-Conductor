@@ -1,0 +1,17 @@
+"Analysoi säveltaso" = "Analysoi säveltaso";
+"Kuuntelukohta" = "Kuuntelukohta";
+"Havaintojen kattavuus %@ %% · jaksoja %@" = "Havaintojen kattavuus %@ %% · jaksoja %@";
+"Analyysi tarvitsee vähintään 15 sekunnin tallenteen." = "Analyysi tarvitsee vähintään 15 sekunnin tallenteen.";
+"Tallenteesta ei löytynyt riittävän yhtenäistä säveltasoa." = "Tallenteesta ei löytynyt riittävän yhtenäistä säveltasoa.";
+"Vertailu A4 = %@ Hz, tasavireinen asteikko." = "Vertailu A4 = %@ Hz, tasavireinen asteikko.";
+"Kokeellinen arvio yhteisestä säveltasosta. Säveltasossa on 100 sentin monitulkintaisuus. Käyrä käyttää 15 sekunnin jaksoja ja kahden sekunnin askelta, ja muutos rajataan 12 senttiin pistettä kohti. Epävarmat kohdat näkyvät aukkoina." = "Kokeellinen arvio yhteisestä säveltasosta. Säveltasossa on 100 sentin monitulkintaisuus. Käyrä käyttää 15 sekunnin jaksoja ja kahden sekunnin askelta, ja muutos rajataan 12 senttiin pistettä kohti. Epävarmat kohdat näkyvät aukkoina.";
+"Tallenteiden piano- ja metronomiäänten ajankohtia ei ole kirjattu. Kaiuttimesta tallentuneet harjoitteluäänet voivat vaikuttaa tulokseen." = "Tallenteiden piano- ja metronomiäänten ajankohtia ei ole kirjattu. Kaiuttimesta tallentuneet harjoitteluäänet voivat vaikuttaa tulokseen.";
+"Yritä uudelleen" = "Yritä uudelleen";
+"Analysoidaan säveltasoa…" = "Analysoidaan säveltasoa…";
+"Aika (s)" = "Aika (s)";
+"Senttiä" = "Senttiä";
+"Käyrä yhdistää kaikki tallenteen äänet. Se ei erottele stemmoja eikä mittaa luonnonvireisen soinnun puhtautta. 100 sentin taitto ja tasoitus voivat peittää nopean tai suuren muutoksen." = "Käyrä yhdistää kaikki tallenteen äänet. Se ei erottele stemmoja eikä mittaa luonnonvireisen soinnun puhtautta. 100 sentin taitto ja tasoitus voivat peittää nopean tai suuren muutoksen.";
+"Yhden tallenteen enimmäiskesto on 2 tuntia. Bluetooth-kuulokkeilla käytetään iPhonen mikrofonia, jotta toisto säilyy laadukkaana." = "Yhden tallenteen enimmäiskesto on 2 tuntia. Bluetooth-kuulokkeilla käytetään iPhonen mikrofonia, jotta toisto säilyy laadukkaana.";
+"Iskutavan vaihto muuntaa BPM-luvun. Alue 30–240 BPM voi rajoittaa muunnosta." = "Iskutavan vaihto muuntaa BPM-luvun. Alue 30–240 BPM voi rajoittaa muunnosta.";
+"Enharmoniset sävelet eroavat. Mustat koskettimet: %@. Susikvintti: %@–%@." = "Enharmoniset sävelet eroavat. Mustat koskettimet: %@. Susikvintti: %@–%@.";
+"Asetusten mainokset ja suostumuspalvelu käyttävät verkkoyhteyttä. Mainokset ladataan vain, kun harjoitteluääni, kuuntelu ja äänitys ovat pysähtyneet." = "Asetusten mainokset ja suostumuspalvelu käyttävät verkkoyhteyttä. Mainokset ladataan vain, kun harjoitteluääni, kuuntelu ja äänitys ovat pysähtyneet.";

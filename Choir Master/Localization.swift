@@ -43,11 +43,42 @@ struct AppLanguage: Identifiable, Sendable {
 
 /// App-specific language selection. Every translation ships inside the app bundle.
 nonisolated func T(_ key: String, _ arguments: CVarArg...) -> String {
+    localizedText(key, arguments: arguments, table: nil)
+}
+
+nonisolated func tunerText(_ key: String, _ arguments: CVarArg...) -> String {
+    localizedText(key, arguments: arguments, table: "Tuner")
+}
+
+nonisolated func analysisText(_ key: String, _ arguments: CVarArg...) -> String {
+    localizedText(key, arguments: arguments, table: "Analysis")
+}
+
+private nonisolated final class TranslationCache: @unchecked Sendable {
+    static let shared = TranslationCache()
+    private let lock = NSLock()
+    private var bundles: [String: Bundle] = [:]
+    private var formats: [String: String] = [:]
+    func format(key: String, code: String, table: String?) -> String {
+        lock.lock(); defer { lock.unlock() }
+        let identity = "\(code)\u{0}\(table ?? "Localizable")\u{0}\(key)"
+        if let cached = formats[identity] { return cached }
+        func bundle(_ language: String) -> Bundle? {
+            if let cached = bundles[language] { return cached }
+            guard let path = Bundle.main.path(forResource: language, ofType: "lproj"), let bundle = Bundle(path: path) else { return nil }
+            bundles[language] = bundle
+            return bundle
+        }
+        let fallback = bundle("en")?.localizedString(forKey: key, value: key, table: table) ?? key
+        let format = bundle(code)?.localizedString(forKey: key, value: fallback, table: table) ?? fallback
+        formats[identity] = format
+        return format
+    }
+}
+
+private nonisolated func localizedText(_ key: String, arguments: [CVarArg], table: String?) -> String {
     let stored = UserDefaults.standard.string(forKey: "appLanguage") ?? "fi"
     let code = AppLanguage.all.contains(where: { $0.id == stored }) ? stored : "fi"
-    let localized = Bundle.main.path(forResource: code, ofType: "lproj").flatMap(Bundle.init(path:))
-    let english = Bundle.main.path(forResource: "en", ofType: "lproj").flatMap(Bundle.init(path:))
-    let fallback = english?.localizedString(forKey: key, value: key, table: nil) ?? key
-    let format = localized?.localizedString(forKey: key, value: fallback, table: nil) ?? fallback
+    let format = TranslationCache.shared.format(key: key, code: code, table: table)
     return arguments.isEmpty ? format : String(format: format, locale: Locale(identifier: code), arguments: arguments)
 }
