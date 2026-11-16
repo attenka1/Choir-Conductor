@@ -1,0 +1,93 @@
+{
+  "assertions" : 41695847,
+  "results" : [
+    {
+      "beats_each" : 8,
+      "cases" : 211,
+      "phase_error_source_samples_max" : 1,
+      "test" : "all_integer_tempos"
+    },
+    {
+      "bpm" : 40,
+      "frames" : 26460000,
+      "last_onset" : 26393850,
+      "max_phase_error_samples" : 0,
+      "onsets" : 400,
+      "test" : "ten_minute_clock"
+    },
+    {
+      "bpm" : 60,
+      "frames" : 26460000,
+      "last_onset" : 26415900,
+      "max_phase_error_samples" : 0,
+      "onsets" : 600,
+      "test" : "ten_minute_clock"
+    },
+    {
+      "bpm" : 120,
+      "frames" : 26460000,
+      "last_onset" : 26437950,
+      "max_phase_error_samples" : 0,
+      "onsets" : 1200,
+      "test" : "ten_minute_clock"
+    },
+    {
+      "bpm" : 180,
+      "frames" : 26460000,
+      "last_onset" : 26445300,
+      "max_phase_error_samples" : 0,
+      "onsets" : 1800,
+      "test" : "ten_minute_clock"
+    },
+    {
+      "bpm" : 240,
+      "frames" : 26460000,
+      "last_onset" : 26448975,
+      "max_phase_error_samples" : 0,
+      "onsets" : 2400,
+      "test" : "ten_minute_clock"
+    },
+    {
+      "bpm" : 137,
+      "frames" : 26460000,
+      "last_onset" : 26440687,
+      "max_phase_error_samples" : 0.99270072998479009,
+      "onsets" : 1370,
+      "test" : "ten_minute_clock"
+    },
+    {
+      "bpm" : 239,
+      "frames" : 26460000,
+      "last_onset" : 26448929,
+      "max_phase_error_samples" : 0.99581589968875051,
+      "onsets" : 2390,
+      "test" : "ten_minute_clock"
+    },
+    {
+      "bpm" : [
+        40,
+        137,
+        240
+      ],
+      "result" : "bit-identical PCM",
+      "test" : "buffer_invariance"
+    },
+    {
+      "accent_hz" : 1600,
+      "meters" : 16,
+      "regular_hz" : 1000,
+      "test" : "all_meters_pcm_accents"
+    },
+    {
+      "live_onsets" : [
+        0,
+        22050,
+        33075,
+        44100
+      ],
+      "stop_clear_restart_mute" : "pass",
+      "test" : "control_mailbox"
+    }
+  ],
+  "source_sample_rate" : 44100
+}

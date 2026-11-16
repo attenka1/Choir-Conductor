@@ -76,10 +76,10 @@ struct TunerView: View {
             if startRequest != nil { await tuner.start(prepare: prepare) }
         }
         .onChange(of: referenceEnabled) { _, enabled in
-            if enabled { playReference(referenceNote) } else { stopReference() }
+            if enabled && tuner.active { playReference(referenceNote) } else { stopReference() }
         }
         .onChange(of: referenceNote) { _, note in
-            if referenceEnabled { playReference(note) }
+            if referenceEnabled && tuner.active { playReference(note) }
         }
         .onChange(of: tuner.active) { _, active in
             if !active { referenceEnabled = false; stopReference() }

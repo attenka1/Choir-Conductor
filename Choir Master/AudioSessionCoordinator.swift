@@ -33,13 +33,20 @@ import AVFoundation
     var onChange: (() -> Void)?
     var onError: ((Error) -> Void)?
 
-    func begin(_ client: Client) throws {
-        guard !interrupted else { throw CocoaError(.userCancelled) }
+    func begin(_ client: Client, userInitiated: Bool = false) throws {
+        // A document provider/audio preview can interrupt us without a matching
+        // ended notification. An explicit new Play action may try activation again;
+        // the system still rejects activation if another activity needs exclusivity.
+        if interrupted && userInitiated {
+            interrupted = false
+            active = false
+        }
+        guard !interrupted else { throw AudioSessionError.interrupted }
         guard !clients.contains(client) else { return }
         // The tuner owns microphone capture, but an explicitly enabled reference may play.
         guard client == .tuner ? clients.subtracting([.sound]).isEmpty :
                 (!clients.contains(.tuner) || client == .sound) else {
-            throw CocoaError(.userCancelled)
+            throw AudioSessionError.tunerBusy
         }
         let previous = clients
         clients.insert(client)
@@ -55,7 +62,12 @@ import AVFoundation
         interrupted = true; active = false
         clients.removeAll(); onChange?()
     }
-    func interruptionEnded() { interrupted = false; active = false }
+    func interruptionEnded() {
+        // Ignore a late end notification after the user has already reactivated.
+        guard interrupted else { return }
+        interrupted = false
+        active = false
+    }
 
     private func reconcile() throws {
         guard !interrupted else { return }
@@ -81,6 +93,18 @@ import AVFoundation
             try session.setPreferredIOBufferDuration(0.005)
             try session.setActive(true, options: [])
             active = true
+        }
+    }
+}
+
+private nonisolated enum AudioSessionError: LocalizedError {
+    case interrupted, tunerBusy
+    var errorDescription: String? {
+        switch self {
+        case .interrupted:
+            return analysisText("Äänentoisto keskeytyi. Käynnistä kuuntelu uudelleen, kun muu ääntä käyttävä toiminto on päättynyt.")
+        case .tunerBusy:
+            return analysisText("Lopeta viritysmittarin kuuntelu ennen tallenteen toistoa tai äänitystä.")
         }
     }
 }

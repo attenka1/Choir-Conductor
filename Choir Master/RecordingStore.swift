@@ -5,10 +5,13 @@ nonisolated struct RehearsalRecording: Identifiable, Codable, Equatable, Sendabl
     var name: String
     let date: Date
     var duration: Double
-    var filename: String { id.uuidString + ".m4a" }
+    var fileExtension: String = "m4a"
+    static let supportedExtensions: Set<String> = ["m4a", "wav", "mp3", "aiff", "aif", "caf", "flac", "aac", "mp4"]
+    var filename: String { id.uuidString + "." + fileExtension }
     var isValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && name.count <= 100 &&
-        duration.isFinite && duration >= 0 && date.timeIntervalSince1970.isFinite
+        duration.isFinite && duration >= 0 && date.timeIntervalSince1970.isFinite &&
+        Self.supportedExtensions.contains(fileExtension)
     }
 }
 
@@ -30,5 +33,17 @@ nonisolated struct RecordingStore {
         guard items.allSatisfy(\.isValid), Set(items.map(\.id)).count == items.count else {
             throw CocoaError(.fileReadCorruptFile)
         }
+    }
+}
+
+// Existing recording indexes contain no extension; preserve their original M4A paths.
+extension RehearsalRecording {
+    nonisolated init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(id: try values.decode(UUID.self, forKey: .id),
+                  name: try values.decode(String.self, forKey: .name),
+                  date: try values.decode(Date.self, forKey: .date),
+                  duration: try values.decode(Double.self, forKey: .duration),
+                  fileExtension: try values.decodeIfPresent(String.self, forKey: .fileExtension) ?? "m4a")
     }
 }

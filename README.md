@@ -4,7 +4,7 @@ Avaa `Choir Master.xcodeproj`. Projektin, targetin, jaetun schemen ja sovellukse
 
 ## Projektiasetukset
 
-Projektin, targetin, lähdekansion ja schemen nimet muutettiin Choir Masteriksi sekä versionumeroksi 1.0.0. Bundle Identifier on `com.atte.tenkanen.ChoirConductor`, jotta Choir Master käyttää olemassa olevaa App Store Connect -tietuetta. Kehittäjätiimi `XN792Q268W` ja automaattinen allekirjoitus säilyivät. Targetin alkuperäinen `$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)` ratkaisi nykyisellä Xcodella iOS 17.0:ksi. Targetiin on nyt asetettu sama 17.0 suoraan; projektitason 27.0-arvo ei ole tämän targetin toteutuva vähimmäisversio. Ominaisuudet käyttävät iOS 17:n rajapintoja.
+Projektin, targetin, lähdekansion ja schemen nimet muutettiin Choir Masteriksi sekä versionumeroksi 1.0.0. Bundle Identifier on `com.atte.tenkanen.ChoirConductor`, jotta Choir Master käyttää olemassa olevaa App Store Connect -tietuetta. Kehittäjätiimi `XN792Q268W` ja automaattinen allekirjoitus säilyivät. Targetin alkuperäinen `$(RECOMMENDED_IPHONEOS_DEPLOYMENT_TARGET)` ratkaisi nykyisellä Xcodella iOS 17.0:ksi. Projektin, sovelluskohteen ja testikohteen vähimmäisversio on nyt asetettu suoraan arvoon 17.0. Ominaisuudet käyttävät iOS 17:n rajapintoja.
 
 ## Toteutus
 
@@ -14,7 +14,7 @@ Projektin, targetin, lähdekansion ja schemen nimet muutettiin Choir Masteriksi 
 - UIKit-koskettimisto seuraa jokaista UITouch-kosketusta, myös liu'utusta ja peruutusta. Vähintään 24 pisteen yhden sormen vaakaveto vierittää koskettimistoa ja peruuttaa soittokosketuksen; peruuntunut sävel sammutetaan myös Pidon aikana. C2–C6, keskimmäinen C4; oletusnäkymä C3–C5. Pito, sävelkohtainen sammutus ja Hiljennä kaikki.
 - Kaikki näytteet esiladataan monoksi ennen soittoa. Lineaarinen interpolointi, noin 5 ms:n attack ja noin 90 ms:n release. Pito jatkaa näytettä ristihäivytetyllä silmukalla. Tanh-rajoitus estää ulostulon ylityksen.
 - A4 415/440/442 Hz ja oma arvo 300–500 Hz (oletus 442), suomalainen H/B tai kansainvälinen B/B♭, omat äänenvoimakkuudet. Asetukset tallentuvat UserDefaultsiin.
-- Taustalle siirtyminen, äänikeskeytys ja kuulokkeiden irrotus pysäyttävät äänen. Tilapäinen inactive-tila ei pysäytä harjoitusta. Audioenginen formaattimuutoksen jälkeen aktiivinen soitto palautetaan. Äänikeskeytyksen jälkeen ääni ei käynnisty itsestään. Näyttö pysyy hereillä metronomin, mikrofonitallennuksen ja jatkuvan viritysäänen aikana.
+- Taustalle siirtyminen, äänikeskeytys ja kuulokkeiden irrotus pysäyttävät äänen. Tilapäinen inactive-tila ei pysäytä harjoitusta. Audioenginen formaattimuutoksen jälkeen aktiivinen soitto palautetaan. Äänikeskeytyksen jälkeen ääni ei käynnisty itsestään. Näyttö pysyy hereillä metronomin, mikrofonitallennuksen, viritysmittarin kuuntelun sekä soivan pianon tai jatkuvan viritysäänen aikana, myös pidetyn pianosoinnun aikana.
 - Äänenkäsittely ja tallenteiden analyysi toimivat paikallisesti. Asetusten Google Mobile Ads / UMP -integraatio käyttää verkkoyhteyttä; mainoksia ja suostumusikkunaa ei ladata harjoittelun aikana.
 
 `ContentView.swift` sisältää näkymät, `ConductorModel.swift` ohjauksen ja asetukset, `PianoKeyboard.swift` kosketukset, `AudioEngine.swift` audioistunnon ja esilatauksen sekä `AudioRenderer.swift` näytekohtaisen soiton ja metronomin.
@@ -182,3 +182,13 @@ korjattiin eksplisiittisellä nonisolated-deinitillä. Käyttöliittymää ei ta
 visuaalisesti eikä analyysiä validoitu fyysisellä iPhonella.
 
 [Testien uusinta](Tests/RecordingAnalysisChecks/README.md).
+
+## Äänitiedoston tuonti
+
+Äänitys → **Tuo äänitiedosto** avaa Tiedostot-valitsimen. Valittu äänite
+kopioidaan sovelluksen tallenneluetteloon alkuperäisessä muodossa, ja sen analyysi
+avautuu automaattisesti. Lähdetiedostoa ei muuteta. Tuonti ei tarvitse mikrofonilupaa.
+Tuettua aineistoa ovat järjestelmän dekoodaamat M4A-, WAV-, MP3-, AIFF-, CAF-,
+FLAC- ja AAC-äänitteet: mono/stereo, 8–192 kHz, enintään kaksi tuntia.
+Alle 15 sekunnin äänitteen voi tuoda ja kuunnella, mutta käyrä tarvitsee
+vähintään 15 sekuntia. Vanhojen M4A-tallenteiden tiedostopolut säilyvät.

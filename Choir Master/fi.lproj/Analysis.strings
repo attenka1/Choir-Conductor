@@ -15,3 +15,10 @@
 "Iskutavan vaihto muuntaa BPM-luvun. Alue 30–240 BPM voi rajoittaa muunnosta." = "Iskutavan vaihto muuntaa BPM-luvun. Alue 30–240 BPM voi rajoittaa muunnosta.";
 "Enharmoniset sävelet eroavat. Mustat koskettimet: %@. Susikvintti: %@–%@." = "Enharmoniset sävelet eroavat. Mustat koskettimet: %@. Susikvintti: %@–%@.";
 "Asetusten mainokset ja suostumuspalvelu käyttävät verkkoyhteyttä. Mainokset ladataan vain, kun harjoitteluääni, kuuntelu ja äänitys ovat pysähtyneet." = "Asetusten mainokset ja suostumuspalvelu käyttävät verkkoyhteyttä. Mainokset ladataan vain, kun harjoitteluääni, kuuntelu ja äänitys ovat pysähtyneet.";
+"Tuo äänitiedosto" = "Tuo äänitiedosto";
+"Tuodaan äänitiedostoa…" = "Tuodaan äänitiedostoa…";
+"Valitse äänite Tiedostot-apista. Alkuperäinen säilyy ennallaan. Analyysi tarvitsee vähintään 15 sekuntia ääntä." = "Valitse äänite Tiedostot-apista. Alkuperäinen säilyy ennallaan. Analyysi tarvitsee vähintään 15 sekuntia ääntä.";
+"Äänitiedostoa ei tueta. Valitse mono- tai stereoäänite, jonka näytetaajuus on 8–192 kHz." = "Äänitiedostoa ei tueta. Valitse mono- tai stereoäänite, jonka näytetaajuus on 8–192 kHz.";
+"Tuotava äänite saa kestää enintään 2 tuntia." = "Tuotava äänite saa kestää enintään 2 tuntia.";
+"Äänentoisto keskeytyi. Käynnistä kuuntelu uudelleen, kun muu ääntä käyttävä toiminto on päättynyt." = "Äänentoisto keskeytyi. Käynnistä kuuntelu uudelleen, kun muu ääntä käyttävä toiminto on päättynyt.";
+"Lopeta viritysmittarin kuuntelu ennen tallenteen toistoa tai äänitystä." = "Lopeta viritysmittarin kuuntelu ennen tallenteen toistoa tai äänitystä.";

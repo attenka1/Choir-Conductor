@@ -15,3 +15,10 @@
 "Iskutavan vaihto muuntaa BPM-luvun. Alue 30–240 BPM voi rajoittaa muunnosta." = "Changing the beat unit converts the BPM value. The 30–240 BPM range may limit the conversion.";
 "Enharmoniset sävelet eroavat. Mustat koskettimet: %@. Susikvintti: %@–%@." = "Enharmonic notes differ. Black keys: %@. Wolf fifth: %@–%@.";
 "Asetusten mainokset ja suostumuspalvelu käyttävät verkkoyhteyttä. Mainokset ladataan vain, kun harjoitteluääni, kuuntelu ja äänitys ovat pysähtyneet." = "Settings ads and the consent service use the network. Ads load only while practice audio, playback and recording are stopped.";
+"Tuo äänitiedosto" = "Import audio file";
+"Tuodaan äänitiedostoa…" = "Importing audio file…";
+"Valitse äänite Tiedostot-apista. Alkuperäinen säilyy ennallaan. Analyysi tarvitsee vähintään 15 sekuntia ääntä." = "Choose a recording from Files. The original is preserved. Analysis needs at least 15 seconds of audio.";
+"Äänitiedostoa ei tueta. Valitse mono- tai stereoäänite, jonka näytetaajuus on 8–192 kHz." = "Unsupported audio file. Choose a mono or stereo recording with a sample rate of 8–192 kHz.";
+"Tuotava äänite saa kestää enintään 2 tuntia." = "An imported recording must be no longer than 2 hours.";
+"Äänentoisto keskeytyi. Käynnistä kuuntelu uudelleen, kun muu ääntä käyttävä toiminto on päättynyt." = "Audio was interrupted. Start playback again when the other audio activity has ended.";
+"Lopeta viritysmittarin kuuntelu ennen tallenteen toistoa tai äänitystä." = "Stop the tuner before playing or recording audio.";

@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct RecordingView: View {
     @ObservedObject var manager: RecordingManager
@@ -7,6 +8,8 @@ struct RecordingView: View {
     @State private var renaming: RehearsalRecording?
     @State private var name = ""
     @State private var analyzing: RehearsalRecording?
+    @State private var importPicker = false
+    @State private var importJob: Task<Void, Never>?
     @State private var deleting: RehearsalRecording?
     var body: some View {
         NavigationStack {
@@ -18,12 +21,19 @@ struct RecordingView: View {
                     } label: {
                         Label(T(manager.recording ? "Lopeta äänitys" : "Aloita äänitys"), systemImage: manager.recording ? "stop.circle.fill" : "record.circle")
                             .font(.title3.bold()).foregroundStyle(.white).frame(maxWidth: .infinity, minHeight: 52)
-                    }.buttonStyle(.borderedProminent).tint(.red).disabled(manager.loading || manager.requestingPermission)
+                    }.buttonStyle(.borderedProminent).tint(.red).disabled(manager.loading || manager.importing || manager.requestingPermission)
                     Text(analysisText("Yhden tallenteen enimmäiskesto on 2 tuntia. Bluetooth-kuulokkeilla käytetään iPhonen mikrofonia, jotta toisto säilyy laadukkaana."))
                         .font(.caption).foregroundStyle(.secondary)
                     Text(T("Äänitys käyttää mikrofonia. Tallenteet säilyvät tässä iPhonessa. Taustalle siirtyminen lopettaa ja tallentaa äänityksen.")).font(.caption).foregroundStyle(.secondary)
                 }
                 Section(T("Tallenteet")) {
+                    Button { importPicker = true } label: {
+                        Label(analysisText("Tuo äänitiedosto"), systemImage: "square.and.arrow.down")
+                    }
+                    .disabled(manager.loading || manager.importing || manager.recording || manager.requestingPermission)
+                    if manager.importing { ProgressView(analysisText("Tuodaan äänitiedostoa…")) }
+                    Text(analysisText("Valitse äänite Tiedostot-apista. Alkuperäinen säilyy ennallaan. Analyysi tarvitsee vähintään 15 sekuntia ääntä."))
+                        .font(.caption).foregroundStyle(.secondary)
                     if manager.loading { ProgressView() }
                     if !manager.loading && manager.recordings.isEmpty { Text(T("Ei tallenteita vielä.")).foregroundStyle(.secondary) }
                     ForEach(manager.recordings) { item in
@@ -55,6 +65,22 @@ struct RecordingView: View {
                     }
                 }
             }.navigationTitle(T("Äänitys"))
+                .fileImporter(isPresented: $importPicker, allowedContentTypes: [.audio]) { result in
+                    switch result {
+                    case .success(let source):
+                        importJob = Task { @MainActor in
+                            if let item = await manager.importRecording(from: source), !Task.isCancelled {
+                                analyzing = item
+                            }
+                            importJob = nil
+                        }
+                    case .failure(let error):
+                        if (error as NSError).code != CocoaError.userCancelled.rawValue {
+                            manager.error = error.localizedDescription
+                        }
+                    }
+                }
+                .onDisappear { importJob?.cancel() }
                 .sheet(item: $analyzing) { item in
                     RecordingAnalysisView(manager: manager, item: item, a4: a4)
                 }

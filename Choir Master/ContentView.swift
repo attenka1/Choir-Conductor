@@ -35,14 +35,14 @@ struct ContentView: View {
                 if landscape {
                     HStack(alignment: .top, spacing: 20) {
                         ScrollView { metronome(compact: true) }.frame(width: geometry.size.width * 0.36)
-                        VStack(spacing: 8) { pianoControls(compact: true); PianoKeyboard(model: model).environment(\.layoutDirection, .leftToRight); volume(T("Äänenanto"), value: $model.pianoVolume) }
+                        VStack(spacing: 8) { pianoControls(compact: true); PianoKeyboard(model: model).environment(\.layoutDirection, .leftToRight); volume("Äänenanto", value: $model.pianoVolume) }
                     }
                 } else {
-                    ScrollView { VStack(spacing: 12) { metronome(compact: compact, includeStart: false); if !compact { volume(T("Metronomi"), value: $model.clickVolume) } } }
+                    ScrollView { VStack(spacing: 12) { metronome(compact: compact, includeStart: false); if !compact { volume("Metronomi", value: $model.clickVolume) } } }
                     startButton(compact: true)
                     pianoControls(compact: compact)
                     PianoKeyboard(model: model).environment(\.layoutDirection, .leftToRight).frame(height: min(compact ? 140 : 210, geometry.size.height * 0.28))
-                    if !compact { volume(T("Äänenanto"), value: $model.pianoVolume) }
+                    if !compact { volume("Äänenanto", value: $model.pianoVolume) }
                 }
             }
             .padding(compact ? 12 : 16)
@@ -55,7 +55,7 @@ struct ContentView: View {
         .sheet(isPresented: $settings) { localized(settingsView) }
         .sheet(isPresented: $chords) { localized(ChordLibraryView(model: model)) }
         .sheet(isPresented: $tunerPanel) {
-            localized(TunerView(tuner: model.tuner, a4: model.tuning, international: model.international, temperament: model.temperament, root: model.tuningRoot, divisions: model.divisions, playReference: model.playTunerReference, stopReference: model.silencePiano, prepare: model.prepareTuner))
+            localized(TunerView(tuner: model.tuner, a4: model.tuning, international: model.international, temperament: model.temperament, root: model.tuningRoot, divisions: model.divisions, playReference: model.playTunerReference, stopReference: model.stopTunerReference, prepare: model.prepareTuner))
         }
         .sheet(isPresented: $recordingPanel) { localized(RecordingView(manager: model.recordings, a4: model.tuning)) }
         .sheet(item: $meterSelection) { localized(MeterSelectionView(model: model, selection: $0)) }
@@ -152,8 +152,9 @@ struct ContentView: View {
             }
         }
     }
-    private func volume(_ title: String, value: Binding<Double>) -> some View {
-        HStack(spacing: 10) { Text(T(title)).font(.caption).frame(width: 76, alignment: .leading); Image(systemName: "speaker.fill").accessibilityHidden(true); Slider(value: value, in: 0...1).accessibilityLabel(T("%@ äänenvoimakkuus", T(title))); Image(systemName: "speaker.wave.2.fill").accessibilityHidden(true) }
+    private func volume(_ titleKey: String, value: Binding<Double>) -> some View {
+        let title = T(titleKey)
+        return HStack(spacing: 10) { Text(title).font(.caption).frame(width: 76, alignment: .leading); Image(systemName: "speaker.fill").accessibilityHidden(true); Slider(value: value, in: 0...1).accessibilityLabel(T("%@ äänenvoimakkuus", title)); Image(systemName: "speaker.wave.2.fill").accessibilityHidden(true) }
     }
     private var tempoEditor: some View {
         NavigationStack {
@@ -211,7 +212,7 @@ struct ContentView: View {
                     }
                 }
                 Section(T("Sävelnimet")) { Picker(T("Nimistö"), selection: $model.international) { Text(T("Suomalainen H / B")).tag(false); Text(T("Kansainvälinen B / B♭")).tag(true) } }
-                Section(T("Äänenvoimakkuudet")) { volume(T("Metronomi"), value: $model.clickVolume); volume(T("Äänenanto"), value: $model.pianoVolume) }
+                Section(T("Äänenvoimakkuudet")) { volume("Metronomi", value: $model.clickVolume); volume("Äänenanto", value: $model.pianoVolume) }
                 Section(T("Viritysääni")) {
                     Picker(T("Ääni"), selection: $model.referenceSound) {
                         ForEach(ReferenceSound.allCases, id: \.self) { Text($0.title).tag($0) }

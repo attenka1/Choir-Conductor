@@ -1,0 +1,18 @@
+Test Suite 'Selected tests' started at 2026-11-17 00:03:52.922.
+Test Suite 'ChoirMasterTests.xctest' started at 2026-11-17 00:03:52.922.
+Test Suite 'MetronomeAuditTests' started at 2026-11-17 00:03:52.922.
+Test Case '-[ChoirMasterTests.MetronomeAuditTests testAllNumeratorDenominatorBeatCounts]' started.
+Test Case '-[ChoirMasterTests.MetronomeAuditTests testAllNumeratorDenominatorBeatCounts]' passed (0.106 seconds).
+Test Case '-[ChoirMasterTests.MetronomeAuditTests testAllTemposRoundTripBothDirectionsAndExplicitEditResetsReturn]' started.
+Test Case '-[ChoirMasterTests.MetronomeAuditTests testAllTemposRoundTripBothDirectionsAndExplicitEditResetsReturn]' passed (0.503 seconds).
+Test Case '-[ChoirMasterTests.MetronomeAuditTests testLossyRoundTripAcrossReloadCharacterization]' started.
+Test Case '-[ChoirMasterTests.MetronomeAuditTests testLossyRoundTripAcrossReloadCharacterization]' passed (0.003 seconds).
+Test Case '-[ChoirMasterTests.MetronomeAuditTests testNoOpBoundaryArrowsLoseReturnTempoCharacterization]' started.
+Test Case '-[ChoirMasterTests.MetronomeAuditTests testNoOpBoundaryArrowsLoseReturnTempoCharacterization]' passed (0.004 seconds).
+Test Suite 'MetronomeAuditTests' passed at 2026-11-17 00:03:53.541.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.617 (0.618) seconds
+Test Suite 'ChoirMasterTests.xctest' passed at 2026-11-17 00:03:53.541.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.617 (0.618) seconds
+Test Suite 'Selected tests' passed at 2026-11-17 00:03:53.541.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.617 (0.619) seconds
+** TEST SUCCEEDED **

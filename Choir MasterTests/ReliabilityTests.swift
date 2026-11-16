@@ -20,6 +20,168 @@ import GoogleMobileAds
 }
 
 @MainActor final class ReliabilityTests: XCTestCase {
+    private func importFixture(at source: URL, channels: AVAudioChannelCount = 1) throws {
+        let rate = 22050.0
+        let format = AVAudioFormat(standardFormatWithSampleRate: rate, channels: channels)!
+        let file = try AVAudioFile(forWriting: source, settings: format.settings)
+        let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(rate * 18))!
+        buffer.frameLength = buffer.frameCapacity
+        for channel in 0..<Int(channels) {
+            for index in 0..<Int(buffer.frameLength) {
+                buffer.floatChannelData![channel][index] = Float(0.2 * sin(2 * .pi * 440 * Double(index) / rate))
+            }
+        }
+        try file.write(from: buffer)
+    }
+
+    func testImportedWavIsPreservedAnalyzedAndReopened() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let source = directory.appendingPathComponent("Choir rehearsal.wav")
+        try importFixture(at: source, channels: 2)
+        let original = try Data(contentsOf: source)
+        let recordings = directory.appendingPathComponent("Recordings")
+        let manager = RecordingManager(session: AudioSessionCoordinator(driver: SessionDouble()), directory: recordings)
+        while manager.loading { try await Task.sleep(for: .milliseconds(10)) }
+        let imported = await manager.importRecording(from: source)
+        let item = try XCTUnwrap(imported)
+        XCTAssertEqual(item.name, "Choir rehearsal")
+        XCTAssertEqual(item.fileExtension, "wav")
+        XCTAssertEqual(item.duration, 18, accuracy: 0.01)
+        XCTAssertEqual(try Data(contentsOf: manager.url(item)), original)
+        XCTAssertEqual(try Data(contentsOf: source), original)
+        XCTAssertEqual(try RecordingStore(directory: recordings).load(), [item])
+        let result = try await Task.detached {
+            try RecordingAnalysisStore(source: recordings.appendingPathComponent(item.filename)).resolve(a4: 440) { _ in }
+        }.value
+        XCTAssertEqual(result.valid, 2)
+        let reopened = RecordingManager(session: AudioSessionCoordinator(driver: SessionDouble()), directory: recordings)
+        while reopened.loading { try await Task.sleep(for: .milliseconds(10)) }
+        XCTAssertEqual(reopened.recordings, [item])
+        manager.delete(item)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: manager.url(item).path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: RecordingAnalysisStore(source: manager.url(item)).cache.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: source.path))
+    }
+
+    func testImportedM4APreservesOriginalEncoding() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let source = directory.appendingPathComponent("Voice memo.m4a")
+        do {
+            let file = try AVAudioFile(forWriting: source, settings: [
+                AVFormatIDKey: kAudioFormatMPEG4AAC, AVSampleRateKey: 44100,
+                AVNumberOfChannelsKey: 1, AVEncoderBitRateKey: 128000])
+            let buffer = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: 44100)!
+            buffer.frameLength = buffer.frameCapacity
+            for index in 0..<44100 {
+                buffer.floatChannelData![0][index] = Float(0.2 * sin(2 * .pi * 440 * Double(index) / 44100))
+            }
+            try file.write(from: buffer)
+        }
+        let manager = RecordingManager(session: AudioSessionCoordinator(driver: SessionDouble()), directory: directory.appendingPathComponent("Recordings"))
+        while manager.loading { try await Task.sleep(for: .milliseconds(10)) }
+        let imported = await manager.importRecording(from: source)
+        let item = try XCTUnwrap(imported)
+        XCTAssertEqual(item.fileExtension, "m4a")
+        XCTAssertGreaterThan(item.duration, 0.9)
+        XCTAssertEqual(try Data(contentsOf: manager.url(item)), try Data(contentsOf: source))
+    }
+
+    func testInvalidImportAndFailedIndexSaveLeaveNoCopiedFiles() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let recordings = directory.appendingPathComponent("Recordings")
+        let manager = RecordingManager(session: AudioSessionCoordinator(driver: SessionDouble()), directory: recordings)
+        while manager.loading { try await Task.sleep(for: .milliseconds(10)) }
+        let corrupt = directory.appendingPathComponent("broken.wav")
+        try Data("not audio".utf8).write(to: corrupt)
+        let rejected = await manager.importRecording(from: corrupt)
+        XCTAssertNil(rejected)
+        XCTAssertNotNil(manager.error)
+        XCTAssertTrue(manager.recordings.isEmpty)
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: recordings.path), ["index.json"])
+        let source = directory.appendingPathComponent("valid.wav")
+        try importFixture(at: source)
+        let request = Task { await manager.importRecording(from: source) }
+        request.cancel()
+        let cancelled = await request.value
+        XCTAssertNil(cancelled)
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: recordings.path), ["index.json"])
+        let index = RecordingStore(directory: recordings).index
+        try FileManager.default.removeItem(at: index)
+        try FileManager.default.createDirectory(at: index, withIntermediateDirectories: false)
+        let failedSave = await manager.importRecording(from: source)
+        XCTAssertNil(failedSave)
+        XCTAssertTrue(manager.recordings.isEmpty)
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath: recordings.path), ["index.json"])
+    }
+
+    func testLegacyRecordingIndexDefaultsToM4A() throws {
+        let item = RehearsalRecording(id: UUID(), name: "Legacy", date: Date(), duration: 30)
+        let encoded = try JSONEncoder().encode(item)
+        var legacy = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        legacy.removeValue(forKey: "fileExtension")
+        let restored = try JSONDecoder().decode(RehearsalRecording.self, from: JSONSerialization.data(withJSONObject: legacy))
+        XCTAssertEqual(restored, item)
+        XCTAssertEqual(restored.filename, item.id.uuidString + ".m4a")
+        var unsafe = item
+        unsafe.fileExtension = "../wav"
+        XCTAssertFalse(unsafe.isValid)
+    }
+
+    func testExplicitPlaybackCanRecoverFromUnpairedInterruption() throws {
+        let driver = SessionDouble()
+        let session = AudioSessionCoordinator(driver: driver)
+        try session.begin(.sound)
+        session.interruptionBegan()
+        XCTAssertThrowsError(try session.begin(.sound))
+        try session.begin(.playback, userInitiated: true)
+        XCTAssertEqual(session.clients, [.playback])
+        XCTAssertEqual(driver.activations, [true, true])
+        session.interruptionEnded() // A delayed end must not lose the active claim.
+        session.end(.playback)
+        XCTAssertEqual(driver.activations, [true, true, false])
+    }
+
+    func testExplicitPlaybackStillHonorsSystemActivationFailure() throws {
+        let driver = SessionDouble()
+        let session = AudioSessionCoordinator(driver: driver)
+        session.interruptionBegan()
+        driver.failActivation = true
+        XCTAssertThrowsError(try session.begin(.playback, userInitiated: true))
+        XCTAssertTrue(session.clients.isEmpty)
+        driver.failActivation = false
+        try session.begin(.playback, userInitiated: true)
+        XCTAssertEqual(session.clients, [.playback])
+        session.end(.playback)
+    }
+
+    func testImportedRecordingPlaysAfterDocumentPreviewInterruption() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let source = directory.appendingPathComponent("Imported.wav")
+        try importFixture(at: source)
+        let driver = SessionDouble()
+        let session = AudioSessionCoordinator(driver: driver)
+        let manager = RecordingManager(session: session, directory: directory.appendingPathComponent("Recordings"))
+        while manager.loading { try await Task.sleep(for: .milliseconds(10)) }
+        let imported = await manager.importRecording(from: source)
+        let item = try XCTUnwrap(imported)
+        // Reproduce the cancellation reported after an external audio preview.
+        session.interruptionBegan()
+        manager.playRecording(item)
+        XCTAssertNil(manager.error)
+        XCTAssertEqual(manager.playing, item.id)
+        XCTAssertEqual(session.clients, [.playback])
+        manager.stopPlayback()
+        XCTAssertTrue(session.clients.isEmpty)
+    }
+
     func testRecordingAnalysisDecodesFileAndInvalidatesA4Cache() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -106,6 +268,104 @@ import GoogleMobileAds
         XCTAssertTrue(UIApplication.shared.isIdleTimerDisabled)
         model.silencePiano()
         XCTAssertFalse(UIApplication.shared.isIdleTimerDisabled)
+    }
+
+    private func withConductorModel(_ check: (ConductorModel) -> Void) {
+        let domain = Bundle.main.bundleIdentifier!
+        let previous = UserDefaults.standard.persistentDomain(forName: domain) ?? [:]
+        let model = ConductorModel()
+        defer {
+            model.stopAll()
+            UserDefaults.standard.setPersistentDomain(previous, forName: domain)
+        }
+        check(model)
+    }
+
+    func testCompoundRoundTripsFromDotted80_96_100() {
+        withConductorModel { model in
+            model.meter = 6; model.denominator = 8
+            model.compound = true
+            let cases = [(original: 80, converted: 240, restored: 80),
+                         (original: 96, converted: 240, restored: 96),
+                         (original: 100, converted: 240, restored: 100)]
+            for test in cases {
+                model.setTempo(test.original)
+                model.setCompound(false)
+                XCTAssertEqual(model.tempo, test.converted, "Dotted \(test.original) to eighths")
+                model.setCompound(true)
+                XCTAssertEqual(model.tempo, test.restored, "Restore dotted \(test.original)")
+            }
+        }
+    }
+
+    func testCompoundRoundTripsFromEighth80_96_100() {
+        withConductorModel { model in
+            model.meter = 6; model.denominator = 8
+            model.compound = false
+            let cases = [(original: 80, converted: 30, restored: 80),
+                         (original: 96, converted: 32, restored: 96),
+                         (original: 100, converted: 33, restored: 100)]
+            for test in cases {
+                model.setTempo(test.original)
+                model.setCompound(true)
+                XCTAssertEqual(model.tempo, test.converted, "Eighth \(test.original) to dotted")
+                model.setCompound(false)
+                XCTAssertEqual(model.tempo, test.restored, "Restore eighth \(test.original)")
+            }
+        }
+    }
+
+    func testCompoundReturnDoesNotOverrideANewTempo() {
+        withConductorModel { model in
+            model.meter = 6; model.denominator = 8; model.compound = true
+            model.setTempo(96)
+            model.setCompound(false)
+            XCTAssertEqual(model.tempo, 240)
+            model.setTempo(180)
+            model.setCompound(true)
+            XCTAssertEqual(model.tempo, 60)
+        }
+    }
+
+    func testTunerReferenceStopRestoresPianoMode() {
+        withConductorModel { model in
+            model.soundMode = .piano
+            model.playTunerReference(69)
+            XCTAssertEqual(model.soundMode, .reference)
+            XCTAssertTrue(model.sounding.contains(69))
+            model.playTunerReference(72) // Changing the note must retain the original mode.
+            model.stopTunerReference() // The callback used on toggle-off and TunerView disappearance.
+            XCTAssertEqual(model.soundMode, .piano)
+            XCTAssertTrue(model.sounding.isEmpty)
+            model.stopTunerReference()
+            XCTAssertEqual(model.soundMode, .piano)
+        }
+    }
+
+    func testTunerClosePreservesMainReferenceMode() {
+        withConductorModel { model in
+            model.soundMode = .reference
+            model.playTunerReference(69)
+            XCTAssertTrue(model.sounding.contains(69))
+            model.stopTunerReference()
+            XCTAssertEqual(model.soundMode, .reference)
+            model.silencePiano() // Main-screen Silence All does not force piano mode.
+            XCTAssertEqual(model.soundMode, .reference)
+            model.stopTunerReference() // Also preserve the mode if no tuner tone was started.
+            XCTAssertEqual(model.soundMode, .reference)
+        }
+    }
+
+    func testInitializationShowsBothAudioAndChordErrors() {
+        let audioFailure = NSError(domain: "InitializationTest", code: 1,
+                                   userInfo: [NSLocalizedDescriptionKey: "Audio initialization failed"])
+        let chordFailure = NSError(domain: "InitializationTest", code: 2,
+                                   userInfo: [NSLocalizedDescriptionKey: "Chord loading failed"])
+        let model = ConductorModel(makeAudio: { _ in throw audioFailure },
+                                   loadChords: { _ in throw chordFailure })
+        defer { model.stopAll() }
+        XCTAssertTrue(model.error?.contains("Audio initialization failed") == true)
+        XCTAssertTrue(model.error?.contains("Chord loading failed") == true)
     }
 
     func testAdsCannotManageSessionOrPlayAudio() {

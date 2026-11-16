@@ -16,10 +16,12 @@ enum SoundMode: String, CaseIterable {
     private var beatUpdates: AnyCancellable?
     private var idleStop: Task<Void, Never>?
     private var applyingProfile = false
+    private var compoundReturn: (mode: Bool, tempo: Int, converted: Int)?
+    private var modeBeforeTunerReference: SoundMode?
     private var pendingSettingsSave: Task<Void, Never>?
     private struct PitchProfile: Equatable { let tuning: Double; let temperament: Temperament; let root: Int }
     private var appliedPitch: PitchProfile?
-    @Published var tempo: Int { didSet { guard !applyingProfile else { return }; save(); configure() } }
+    @Published var tempo: Int { didSet { guard !applyingProfile else { return }; compoundReturn = nil; save(); configure() } }
     @Published var meter: Int { didSet { guard !applyingProfile else { return }; save(); resetMeter() } }
     @Published var denominator: Int { didSet { guard !applyingProfile else { return }; save(); resetMeter() } }
     @Published var compound: Bool { didSet { guard !applyingProfile else { return }; save(); resetMeter() } }
@@ -66,7 +68,8 @@ enum SoundMode: String, CaseIterable {
         default: return T("BPM = neljäsosa ♩")
         }
     }
-    init() {
+    init(makeAudio: @MainActor (AudioSessionCoordinator) throws -> ChoirAudio = { try ChoirAudio(session: $0) },
+         loadChords: @MainActor (UserDefaults) throws -> [SavedChord] = { try ChordStore.load(from: $0) }) {
         let coordinator = AudioSessionCoordinator()
         session = coordinator
         recordings = RecordingManager(session: coordinator)
@@ -88,8 +91,12 @@ enum SoundMode: String, CaseIterable {
         pianoVolume = min(1, max(0, d.object(forKey: "pianoVolume") as? Double ?? 0.7))
         clickVolume = min(1, max(0, d.object(forKey: "clickVolume") as? Double ?? 0.6))
         international = d.bool(forKey: "international")
-        do { audio = try ChoirAudio(session: coordinator); configure() } catch { self.error = error.localizedDescription }
-        do { savedChords = try ChordStore.load(from: d) } catch { self.error = T("Tallennettuja sointuja ei voitu lukea: ") + error.localizedDescription }
+        do { audio = try makeAudio(coordinator); configure() } catch { self.error = error.localizedDescription }
+        do { savedChords = try loadChords(d) }
+        catch {
+            let message = T("Tallennettuja sointuja ei voitu lukea: ") + error.localizedDescription
+            self.error = [self.error, message].compactMap { $0 }.joined(separator: "\n\n")
+        }
         recordings.$requestingPermission.removeDuplicates().sink { [weak self] _ in
             Task { @MainActor in self?.objectWillChange.send() }
         }.store(in: &subscriptions)
@@ -101,7 +108,10 @@ enum SoundMode: String, CaseIterable {
             self?.objectWillChange.send()
         }
         coordinator.onError = { [weak self] in self?.error = $0.localizedDescription }
-        recordings.prepareSession = { [weak self] in self?.stopSound() }
+        recordings.prepareSession = { [weak self] in
+            self?.tuner.stop()
+            self?.stopSound()
+        }
         NotificationCenter.default.publisher(for: AVAudioSession.interruptionNotification).sink { [weak self] notification in
             let raw = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
             Task { @MainActor in
@@ -288,20 +298,36 @@ enum SoundMode: String, CaseIterable {
             recordings.requestingPermission || tuner.active
     }
     func playTunerReference(_ note: Double) {
-        guard tuner.active else { return }
+        // TunerView gates this user action on active microphone listening.
+        if modeBeforeTunerReference == nil { modeBeforeTunerReference = soundMode }
         soundMode = .reference
         noteDown(note)
     }
+    func stopTunerReference() {
+        silencePiano()
+        guard let previousMode = modeBeforeTunerReference else { return }
+        modeBeforeTunerReference = nil
+        soundMode = previousMode
+    }
     func setCompound(_ value: Bool) {
         guard value != compound else { return }
-        // Preserve bar duration while changing the beat unit; the supported BPM range still applies.
+        // Remember the source tempo so clamping/rounding cannot lose it on return.
+        let nextTempo: Int
+        if let previous = compoundReturn, previous.mode == value, previous.converted == tempo {
+            nextTempo = previous.tempo
+            compoundReturn = nil
+        } else {
+            nextTempo = min(240, max(30, value ? Int((Double(tempo) / 3).rounded()) : tempo * 3))
+            compoundReturn = (compound, tempo, nextTempo)
+        }
         applyingProfile = true
-        tempo = min(240, max(30, value ? Int((Double(tempo) / 3).rounded()) : tempo * 3))
+        tempo = nextTempo
         compound = value
         applyingProfile = false
         save(); resetMeter()
     }
     func stopAll() {
+        stopTunerReference()
         tuner.stop()
         recordings.stopAll()
         stopSound()

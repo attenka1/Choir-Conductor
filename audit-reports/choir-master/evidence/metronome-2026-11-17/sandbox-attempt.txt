@@ -1,0 +1,4 @@
+Initial restricted macOS offline engine run failed while constructing AVAudioSourceNode:
+required condition is false: comp != nullptr
+Retried the same binary with system audio-component access. Both 44.1 and 48 kHz offline runs passed.
+Neither run requested microphone input or speaker output.

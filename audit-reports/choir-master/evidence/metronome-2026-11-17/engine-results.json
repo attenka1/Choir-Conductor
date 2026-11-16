@@ -1,0 +1,20 @@
+[
+  {
+    "bpm" : 137,
+    "first_onset" : 1,
+    "input_rate" : 44100,
+    "max_relative_phase_error_output_samples" : 0.99270072998479009,
+    "onsets" : 137,
+    "output_rate" : 44100,
+    "seconds" : 60
+  },
+  {
+    "bpm" : 137,
+    "first_onset" : 10,
+    "input_rate" : 44100,
+    "max_relative_phase_error_output_samples" : 2.6496350364759564,
+    "onsets" : 137,
+    "output_rate" : 48000,
+    "seconds" : 60
+  }
+]

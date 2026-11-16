@@ -1,0 +1,1 @@
+PASS: one million concurrent same-state publications/beat reads, 60s at 137 BPM, bit-identical PCM

@@ -123,3 +123,37 @@ repon sisältä ajettuna. Tag v1.0.1-rc.1 merkitsee julkaisuehdokasta.
 Suositus: seuraavaksi allekirjoitettu arkisto ja TestFlight fyysiselle iPhonelle.
 Julkista App Store -julkaisua ennen tarvitaan edellä luetellut mikrofonin,
 Bluetoothin, vertailuäänen, mainosten ja käyttöliittymän laitetarkistukset.
+
+## Äänitiedoston tuonti 16.11.2026
+
+Tallennenäkymässä on Tiedostot-valitsin ja tuonnin tilailmaisin. Security-scoped
+luku ja tiedostokoordinointi tehdään taustalla. Alkuperäistä ei muunneta tai
+poisteta: kopio validoidaan AVAudioFile-dekooderilla ja siirretään UUID-nimiseen
+paikalliseen tiedostoon. Hakemistoon tallennetaan myös alkuperäinen tiedostopääte;
+vanha indeksi ilman päätettä luetaan M4A-muodossa. Vain tunnetut päätteet sallitaan.
+Validoitu kopio julkaistaan luetteloon vasta atomisen indeksitallennuksen jälkeen.
+Virhe tai peruutus poistaa kopion ja väliaikaistiedoston. Taustalle siirtyminen
+peruu tuonnin. Analyysi avataan onnistumisen jälkeen automaattisesti.
+
+21 XCTest-testiä läpäisi iOS 18.5 -simulaattorissa. Uudet testit kattavat stereo-WAV:n
+tuonnin ja analyysin, M4A:n muuttumattoman kopioinnin, uudelleen avaamisen ja
+poiston, vanhan indeksin yhteensopivuuden, virheellisen tiedoston, peruutuksen ja
+indeksitallennuksen epäonnistumisen siivouksen. Lokalisaatio- ja erillinen
+RecordingStore-tarkistus läpäisivät. Fyysistä Tiedostot/iCloud-valitsimen käyttöä
+ei ole testattu. Tämä lisäys ei sisälly aiempaan v1.0.1-rc.1-tagiin.
+
+## Tuodun tallenteen toiston keskeytystilan korjaus 16.11.2026
+
+Äänisession keskeytystila saattoi jäädä päälle ilman vastaavaa loppuilmoitusta.
+Tällöin tallenteen Kuuntele-painallus hylättiin CocoaError.userCancelled-virheellä
+("Toiminto kumottiin"). Käyttäjän nimenomainen toistopyyntö yrittää nyt aktivoida
+session uudelleen. Taustalla tehtävät aloitukset eivät ohita keskeytystilaa, ja
+iOS voi edelleen hylätä aktivoinnin, jos esimerkiksi puhelu estää sen.
+Myöhäinen keskeytyksen loppuilmoitus ei enää hävitä jo uudelleen aktivoidun
+session aktiivisuustietoa. Tallenteen toiston valmistelu pysäyttää myös virittimen,
+ja sessiokonflikteilla on omat kuvaavat virheilmoitukset.
+
+Regressiotestit kattavat puuttuvan loppuilmoituksen, myöhäisen loppuilmoituksen,
+iOS-aktivoinnin epäonnistumisen ja tuodun WAV-tallenteen oikean AVAudioPlayer-toiston
+keskeytyksen jälkeen. Korjaus on paikallinen; käyttäjän laitteella havaittua
+ilmoitusjärjestystä ei ole tallennettu tai vahvistettu lokista.

@@ -1,0 +1,19 @@
+{
+  "git_head": "da4e8ba6c20ef2073aa6c275b239331c864eed20",
+  "working_tree": "contains uncommitted fixes completed before this audit",
+  "sha256": {
+    "Choir Master/AudioRenderer.swift": "5b430f44d52012d59f8a44d3597f40f6cab59157da7fe949021f2a5650963103",
+    "Choir Master/AudioEngine.swift": "46f911a752c20813d1321e7c2fc004c3c1a965b0bbcceda14dabaa0b46182438",
+    "Choir Master/ConductorModel.swift": "46bc4f0a749a65e107ee5d0e599a8ee7f44da1baab53d3aa3eb9822f4b15a221",
+    "Choir Master/AudioSessionCoordinator.swift": "b1534f907e2d0b88f5002c9bbe89162587e08a31e0ce871f5f254589cc4cb18a",
+    "Choir Master/ContentView.swift": "5114f862b31fe712e3442201a17a239e777267de155f8616c2a8241f4b313585",
+    "Choir Master/RecordingView.swift": "fe994ddb3b10e88db28b30364f4582b322a799597ff43b6073146867964bd5cb",
+    "Choir Master/PianoSampleMetadata.swift": "21978e0d406697972427a3ded6a8a21fe3f789e02c8bb5f1f35db4131e82f1fc",
+    "Choir MasterTests/ReliabilityTests.swift": "2ba1175d2c9ed404ed4346543af94b763024a85c2a4c423618fcc129e4147c22",
+    "Tests/AudioRenderChecks/main.swift": "0bd3abd4d96a72ce510d022bd061f752fbc444cc656ec68b535102c865a874e7",
+    "Choir Master.xcodeproj/project.pbxproj": "8ffcbf0233c6c8d8a5e1558252070c94eacf719ecfea120d676d959c07892b75",
+    "Choir Master.xcodeproj/xcshareddata/xcschemes/Choir Master.xcscheme": "bb27f7af8fd80050c4f406a48f950a5c35f221c9cb0dcef88dc6fa3cee68a883",
+    "Choir Master/ReferenceTone.swift": "bfaec164c35554c4c57ee620aeb1f1ab5436a0cc0576ba3f5bdbb549d7804db6",
+    "Choir Master/ReferenceOscillator.swift": "f391a8b42fa49de87d3003b2ee5035e4de40ab38e4821c2343aa0ed10a05e3cd"
+  }
+}
