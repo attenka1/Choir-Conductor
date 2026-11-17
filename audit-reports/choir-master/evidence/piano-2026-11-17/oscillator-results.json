@@ -1,0 +1,6 @@
+{
+  "max_pitch_error_cents" : 3.1442698674048807e-05,
+  "note_a4_pairs" : 291,
+  "seconds_each" : 2,
+  "stop_after_1000_frames" : "silent"
+}

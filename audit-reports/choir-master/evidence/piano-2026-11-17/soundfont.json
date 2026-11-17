@@ -1,0 +1,29 @@
+{
+  "bytes": 32319396,
+  "presets_19": [
+    {
+      "name": "Pipe Organ",
+      "program": 19,
+      "bank": 0,
+      "bag": 260
+    },
+    {
+      "name": "Pipe Organ 2",
+      "program": 19,
+      "bank": 8,
+      "bag": 985
+    },
+    {
+      "name": "Pipe Organ noVel",
+      "program": 19,
+      "bank": 11,
+      "bag": 1369
+    },
+    {
+      "name": "Pipe Organ 2 noVel",
+      "program": 19,
+      "bank": 12,
+      "bag": 1514
+    }
+  ]
+}

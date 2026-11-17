@@ -1,0 +1,23 @@
+2026-11-17 00:50:15.847 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+2026-11-17 00:50:16.037 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+2026-11-17 00:50:16.234 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+2026-11-17 00:50:16.427 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+2026-11-17 00:50:16.636 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+2026-11-17 00:50:16.836 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+2026-11-17 00:50:17.039 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+2026-11-17 00:50:17.237 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+2026-11-17 00:50:17.440 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+2026-11-17 00:50:17.642 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+2026-11-17 00:50:17.847 soundfont-checks[45835:15226578] Audio files cannot be non-interleaved. Ignoring setting AVLinearPCMIsNonInterleaved YES.
+PASS: A4 415.0, MIDI 69.0, six-second sustain, bounded output, soft stop; tail RMS 0.012829517582632882
+PASS: A4 440.0, MIDI 69.0, six-second sustain, bounded output, soft stop; tail RMS 0.01369544388822952
+PASS: A4 442.0, MIDI 69.0, six-second sustain, bounded output, soft stop; tail RMS 0.013703400687301526
+PASS: A4 443.5, MIDI 69.0, six-second sustain, bounded output, soft stop; tail RMS 0.013693440050091021
+PASS: A4 442.0, MIDI 69.5, six-second sustain, bounded output, soft stop; tail RMS 0.013259561084975512
+PASS: A4 442.0, MIDI 64.0, six-second sustain, bounded output, soft stop; tail RMS 0.010052135479607233
+PASS: A4 442.0, MIDI 64.0, six-second sustain, bounded output, soft stop; tail RMS 0.010052135479607233
+PASS: A4 442.0, MIDI 64.0, six-second sustain, bounded output, soft stop; tail RMS 0.010096117420212746
+PASS: A4 442.0, MIDI 64.0, six-second sustain, bounded output, soft stop; tail RMS 0.010052135479607233
+PASS: A4 442.0, MIDI 64.0, six-second sustain, bounded output, soft stop; tail RMS 0.010096117420212746
+PASS: A4 442.0, MIDI 64.0, six-second sustain, bounded output, soft stop; tail RMS 0.010088682752308138
+PASS: rapid changes and immediate stop do not restart playback

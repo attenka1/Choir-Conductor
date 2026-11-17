@@ -1,0 +1,10 @@
+{
+  "attack_gain_after_220_frames" : 1,
+  "buffer_invariance" : true,
+  "frames_per_voice" : 132300,
+  "large_step_wrap" : true,
+  "source_files" : 25,
+  "tested_note_a4_pairs" : 291,
+  "volume_step_next_sample" : 0,
+  "volume_step_previous_sample" : 0.029991002753376961
+}

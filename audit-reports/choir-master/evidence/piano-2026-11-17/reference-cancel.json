@@ -1,0 +1,34 @@
+[
+  {
+    "font_available" : true,
+    "immediate" : true,
+    "rms_after_later_configure" : 0.014110469260457784,
+    "sound" : "precise",
+    "stopped" : false,
+    "tail_rms_after_play_stop" : 0.014108255859576958
+  },
+  {
+    "font_available" : true,
+    "immediate" : false,
+    "rms_after_later_configure" : 0,
+    "sound" : "precise",
+    "stopped" : true,
+    "tail_rms_after_play_stop" : 0
+  },
+  {
+    "font_available" : true,
+    "immediate" : true,
+    "rms_after_later_configure" : 0.010987404804340113,
+    "sound" : "soundFont",
+    "stopped" : true,
+    "tail_rms_after_play_stop" : 0
+  },
+  {
+    "font_available" : true,
+    "immediate" : false,
+    "rms_after_later_configure" : 0,
+    "sound" : "soundFont",
+    "stopped" : true,
+    "tail_rms_after_play_stop" : 0
+  }
+]

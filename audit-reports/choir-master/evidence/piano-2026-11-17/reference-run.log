@@ -1,0 +1,4 @@
+CHARACTERIZATION: precise, immediate=true, tail RMS=0.014108255859576958, stopped=false, later configure RMS=0.014110469260457784
+CHARACTERIZATION: precise, immediate=false, tail RMS=0.0, stopped=true, later configure RMS=0.0
+CHARACTERIZATION: soundFont, immediate=true, tail RMS=0.0, stopped=true, later configure RMS=0.010987404804340113
+CHARACTERIZATION: soundFont, immediate=false, tail RMS=0.0, stopped=true, later configure RMS=0.0

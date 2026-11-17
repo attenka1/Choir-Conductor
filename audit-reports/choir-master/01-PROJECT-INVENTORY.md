@@ -125,3 +125,11 @@ eivät enää kuvaa tätä työpuuta. Android-SPEC ei ole iOS-vaatimus.
 Muiden osa-alueiden yksityiskohtaisia toimivuusväitteitä ei hyväksytä valmiiksi
 auditoiduiksi tämän kopioinnin vuoksi. Dynaamisen tekstin ja mainosten
 luokitukset tarkennetaan vasta niitä koskevissa vaiheissa.
+
+## Vaiheen 3 kattavuuspäivitys 17.11.2026
+
+Piano, oskillaattori, ReferenceTone ja koskettimiston ohjelmalliset kytkennät
+on nyt auditoitu raportissa 04 kuvatuin rajauksin. 291 pianoäänen ja 291
+oskillaattoriäänen ajot sekä kaksi tilapäistä XCTestiä eivät korvaa fyysistä
+monikosketusta tai kuuntelua. AUD-001/002 ovat avoinna. Tuotannon XCTest-metodien
+määrä on yhä 30, sillä auditin lisätestejä ei lisätty tuotantotestikansioon.

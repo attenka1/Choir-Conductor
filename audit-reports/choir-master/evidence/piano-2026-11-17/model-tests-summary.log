@@ -1,0 +1,14 @@
+Test Suite 'Selected tests' started at 2026-11-17 00:48:43.070.
+Test Suite 'ChoirMasterTests.xctest' started at 2026-11-17 00:48:43.071.
+Test Suite 'PianoAuditTests' started at 2026-11-17 00:48:43.071.
+Test Case '-[ChoirMasterTests.PianoAuditTests testAllKeyboardRangesAndQuarterToneGeometry]' started.
+Test Case '-[ChoirMasterTests.PianoAuditTests testAllKeyboardRangesAndQuarterToneGeometry]' passed (0.005 seconds).
+Test Case '-[ChoirMasterTests.PianoAuditTests testNoteRangeSustainToggleCancellationAndReferenceState]' started.
+Test Case '-[ChoirMasterTests.PianoAuditTests testNoteRangeSustainToggleCancellationAndReferenceState]' passed (0.690 seconds).
+Test Suite 'PianoAuditTests' passed at 2026-11-17 00:48:43.766.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.694 (0.696) seconds
+Test Suite 'ChoirMasterTests.xctest' passed at 2026-11-17 00:48:43.767.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.694 (0.696) seconds
+Test Suite 'Selected tests' passed at 2026-11-17 00:48:43.767.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.694 (0.697) seconds
+** TEST SUCCEEDED **
